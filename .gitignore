@@ -169,7 +169,6 @@ reports/screenshots/
 *.png
 *.jpg
 *.jpeg
-*.gif
 *.bmp
 
 # Allure
