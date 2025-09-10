@@ -12,6 +12,8 @@ class TwitchHomePage(BasePage):
     
     # Locators
     SEARCH_BUTTON = (By.XPATH, ".//a[./div/div[.='Browse']]")
+    PROCEED_BUTTON = (By.XPATH, "//button[contains(text(), 'Proceed')]")
+
 
     def __init__(self, driver: WebDriver):
         super().__init__(driver)
@@ -21,6 +23,21 @@ class TwitchHomePage(BasePage):
         """Navigate to Twitch home page"""
         self.navigate_to(self.url)
         self.wait_for_page_load()
+        # Handle cookie consent modal if it appears
+        self._dismiss_cookie_modal()
+
+    def _dismiss_cookie_modal(self) -> None:
+        """Dismiss the cookie consent modal if it appears"""
+        try:            
+            # Check if the modal is present with a short timeout
+            if self.is_element_present(self.PROCEED_BUTTON, timeout=3):
+                self.logger.info("Cookie consent modal detected, clicking Proceed button")
+                self.click_element(self.PROCEED_BUTTON, timeout=5)
+                self.logger.info("Cookie consent modal dismissed successfully")
+        except Exception as e:
+            # If anything goes wrong, just log and continue
+            # Don't let cookie handling break the main test flow
+            self.logger.debug(f"Cookie modal handling failed (this is okay): {e}")
 
     def click_search_button(self) -> bool:
         """Click the search button/icon
