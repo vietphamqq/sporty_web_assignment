@@ -53,6 +53,7 @@ jobs:
         mkdir -p reports/allure/results
         mkdir -p reports/screenshots
         mkdir -p reports/logs
+        mkdir -p reports/debug
         
     - name: Run tests with coverage
       run: |
@@ -99,10 +100,22 @@ jobs:
         name: test-logs
         path: reports/logs/
         retention-days: 30
+        
+    - name: Upload debug files
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: debug-files
+        path: reports/debug/
+        retention-days: 30
 
   allure-report:
     name: Generate Allure Report
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     needs: test
     if: always()
     
@@ -125,13 +138,20 @@ jobs:
         gh_pages: gh-pages
         allure_history: allure-history
         
+    - name: Setup Pages
+      if: github.ref == 'refs/heads/main'
+      uses: actions/configure-pages@v4
+      
+    - name: Upload Pages artifact
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: allure-history
+        
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: allure-history
-        destination_dir: allure-report
+      id: deployment
+      uses: actions/deploy-pages@v4
 
   lint:
     name: Code Quality Checks
