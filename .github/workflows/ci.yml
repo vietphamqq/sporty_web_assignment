@@ -53,7 +53,6 @@ jobs:
         mkdir -p reports/allure/results
         mkdir -p reports/screenshots
         mkdir -p reports/logs
-        mkdir -p reports/debug
         
     - name: Run tests with coverage
       run: |
@@ -100,14 +99,6 @@ jobs:
         name: test-logs
         path: reports/logs/
         retention-days: 30
-        
-    - name: Upload debug files
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: debug-files
-        path: reports/debug/
-        retention-days: 30
 
   allure-report:
     name: Generate Allure Report
@@ -118,6 +109,9 @@ jobs:
       id-token: write
     needs: test
     if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
     - name: Checkout code
@@ -141,6 +135,8 @@ jobs:
     - name: Setup Pages
       if: github.ref == 'refs/heads/main'
       uses: actions/configure-pages@v4
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}  
       
     - name: Upload Pages artifact
       if: github.ref == 'refs/heads/main'
@@ -152,6 +148,8 @@ jobs:
       if: github.ref == 'refs/heads/main'
       id: deployment
       uses: actions/deploy-pages@v4
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
     name: Code Quality Checks
@@ -241,7 +239,7 @@ jobs:
       run: |
         echo "✅ All tests passed successfully!"
         echo "📊 Test artifacts have been uploaded"
-        echo "📈 Allure Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/"
+        echo "📈 Allure Report: https://vietphamqq.github.io/sporty_web_assignment/${{ github.run_number }}/index.html"
         echo "🔗 Check the Actions tab for detailed reports"
         
     - name: Notify failure
@@ -249,5 +247,5 @@ jobs:
       run: |
         echo "❌ Some tests failed!"
         echo "📊 Test artifacts have been uploaded for analysis"
-        echo "📈 Allure Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/"
+        echo "📈 Allure Report: https://vietphamqq.github.io/sporty_web_assignment/${{ github.run_number }}/index.html"
         echo "🔗 Check the Actions tab for detailed reports"

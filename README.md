@@ -247,7 +247,7 @@ The framework includes a comprehensive CI/CD pipeline:
 - Manual trigger via GitHub UI
 
 #### **Allure Reports on GitHub Pages**
-Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty_web_assignment/allure-report/`
+Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/index.html`
 
 ### Setting Up CI/CD
 
@@ -258,7 +258,7 @@ Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty
    - Go to **Settings** → **Actions** → **General**
    - Under **Workflow permissions**, select **Read and write permissions**
 3. **Push to main branch** - Reports will be automatically deployed
-   - Allure reports will be available at: `https://vietphamqq.github.io/sporty_web_assignment/allure-report`
+   - Allure reports will be available at: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/index.html`
 
 **Optional:**
 - **Repository Secrets**: No secrets required for basic functionality
