@@ -8,8 +8,6 @@ from core.base.test_base import TestBase
 from core.driver_manager import DriverManager
 from core.exceptions.framework_exceptions import DriverException
 from pages.twitch_home_page import TwitchHomePage
-from pages.twitch_search_page import TwitchSearchPage
-from pages.twitch_streamer_page import TwitchStreamerPage
 
 
 class TestTwitch(TestBase):
@@ -27,8 +25,6 @@ class TestTwitch(TestBase):
 
             # Initialize page objects
             self.home_page = TwitchHomePage(self.driver)
-            self.search_page = TwitchSearchPage(self.driver)
-            self.streamer_page = TwitchStreamerPage(self.driver)
 
         except DriverException as e:
             self.logger.error(f"Failed to create mobile driver: {e}")
@@ -54,8 +50,8 @@ class TestTwitch(TestBase):
 
         # Step 2: Click search button
         self.log_test_step("Step 2: Click search button")
-        search_clicked = self.home_page.click_search_button()
-        assert search_clicked, "Failed to click search button"
+        self.search_page = self.home_page.click_search_button()
+        assert self.search_page, "Failed to click search button"
 
         # Step 3: Input "Starcraft II"
         self.log_test_step("Step 3: Input search term 'Starcraft II'")
@@ -77,8 +73,8 @@ class TestTwitch(TestBase):
 
         # Step 5: Select one streamer
         self.log_test_step("Step 5: Select one streamer from search results")
-        streamer_selected = self.search_page.select_first_streamer()
-        assert streamer_selected, "Failed to select streamer, no streamer found"
+        self.streamer_page = self.search_page.select_first_streamer()
+        assert self.streamer_page, "Failed to select streamer, no streamer found"
 
         # Step 6: Wait until all is loaded then take screenshot
         self.log_test_step(

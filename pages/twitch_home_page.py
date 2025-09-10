@@ -1,6 +1,7 @@
 """
 Twitch Home Page - Page Object Model
 """
+from typing import Union
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -8,6 +9,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from core.base.base_page import BasePage
 from core.exceptions.framework_exceptions import ElementNotFoundException
 from config.constants import TimeoutConstants, URLConstants, BrowserConstants
+from pages.twitch_search_page import TwitchSearchPage
 
 
 class TwitchHomePage(BasePage):
@@ -43,7 +45,7 @@ class TwitchHomePage(BasePage):
         finally:
             self.driver.implicitly_wait(BrowserConstants.CHROME_IMPLICIT_WAIT)
 
-    def click_search_button(self) -> bool:
+    def click_search_button(self) -> Union[TwitchSearchPage, bool]:
         """Click the search button/icon
 
         Returns:
@@ -58,7 +60,7 @@ class TwitchHomePage(BasePage):
                 ],
                 timeout=TimeoutConstants.QUICK_WAIT,
             )
-            return True
+            return TwitchSearchPage(self.driver)
         except ElementNotFoundException:
             # Log the error but return False instead of raising exception
             # This maintains the current behavior of the test

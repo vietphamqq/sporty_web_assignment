@@ -2,7 +2,7 @@
 Twitch Search Page - Page Object Model
 """
 
-from typing import List
+from typing import List, Union
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -11,6 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from core.base.base_page import BasePage
 from core.exceptions.framework_exceptions import ElementNotFoundException
 from config.constants import TimeoutConstants
+from pages.twitch_streamer_page import TwitchStreamerPage
 
 
 class TwitchSearchPage(BasePage):
@@ -74,7 +75,7 @@ class TwitchSearchPage(BasePage):
             self.STREAMER_PREVIEW
         )
 
-    def select_first_streamer(self) -> bool:
+    def select_first_streamer(self) -> Union[TwitchStreamerPage, bool]:
         """Select the first available streamer from search results
 
         Returns:
@@ -90,7 +91,7 @@ class TwitchSearchPage(BasePage):
 
             if streamer_elements:
                 streamer_elements[0].click()
-                return True
+                return TwitchStreamerPage(self.driver)
             return False
         except ElementNotFoundException:
             return False
