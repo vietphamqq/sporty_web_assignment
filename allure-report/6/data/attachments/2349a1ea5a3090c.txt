@@ -1,0 +1,5 @@
+2025-09-10 10:54:54 - TestTwitch - INFO - Starting test: TestTwitch
+2025-09-10 10:54:55 - TestTwitch - INFO - Test Step: Starting Twitch test
+2025-09-10 10:54:55 - TestTwitch - INFO - Test Step: Step 1: Navigate to Twitch
+2025-09-10 10:55:06 - TestTwitch - INFO - Test Step: Step 2: Click search button
+2025-09-10 10:55:08 - TestTwitch - INFO - Test completed: TestTwitch in 13.87s

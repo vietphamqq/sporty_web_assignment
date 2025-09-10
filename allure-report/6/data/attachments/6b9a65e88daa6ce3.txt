@@ -1,0 +1,5 @@
+INFO     TestTwitch:test_base.py:24 Starting test: TestTwitch
+INFO     TestTwitch:test_base.py:76 Test Step: Starting Twitch test
+INFO     TestTwitch:test_base.py:76 Test Step: Step 1: Navigate to Twitch
+INFO     TestTwitch:test_base.py:76 Test Step: Step 2: Click search button
+INFO     TestTwitch:test_base.py:42 Test completed: TestTwitch in 13.87s
