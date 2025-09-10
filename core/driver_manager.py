@@ -96,7 +96,7 @@ class ChromeDriverFactory(BrowserFactory):
             )
 
 
-# Future browser factories (placeholders for assignment requirement)
+# Future browser factories
 # class FirefoxDriverFactory(BrowserFactory):
 #     """Factory for creating Firefox WebDriver instances"""
 #     
@@ -159,7 +159,7 @@ class DriverManager:
         Args:
             worker_id: Optional worker ID for parallel execution (auto-detected if None)
             device: Device to emulate (defaults to iPhone SE)
-            browser: Browser type to use (defaults to Chrome for assignment requirement)
+            browser: Browser type to use (defaults to Chrome)
 
         Returns:
             webdriver.Remote: WebDriver instance with mobile emulation
@@ -167,7 +167,7 @@ class DriverManager:
         Raises:
             DriverException: If driver creation fails
         """
-        # Use default browser (Chrome) for assignment requirement
+        # Use default browser (Chrome) 
         browser_type = browser or cls._default_browser
         device_name = device or cls._default_device
         worker_key = cls._get_worker_key(worker_id)

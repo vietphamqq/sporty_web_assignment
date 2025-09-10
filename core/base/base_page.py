@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import Settings
-from config.constants import TimeoutConstants, ReportConstants
+from config.constants import ReportConstants
 from core.exceptions.framework_exceptions import (ElementNotFoundException,
                                                   PageNotFoundException)
 from core.exceptions.framework_exceptions import \

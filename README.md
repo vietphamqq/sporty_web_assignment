@@ -12,7 +12,7 @@ A demonstration of modern web automation testing capabilities built as part of a
 - **📱 Mobile Testing**: Implements Chrome mobile emulation for responsive testing
 - **🏗️ Clean Architecture**: Demonstrates Page Object Model (POM) and design patterns
 - **🛡️ Error Handling**: Custom exception framework with 8 specialized exception types
-- **📊 Test Reporting**: Multiple report formats (HTML & Allure) with visual outputs
+- **📊 Test Reporting**: Allure reports with visual outputs and screenshots
 - **🔄 CI/CD Integration**: Complete GitHub Actions pipeline implementation
 - **⚡ Thread-Safe Design**: Proper resource management and test isolation
 - **🧪 Cross-Environment Support**: Headless and GUI modes for different environments
@@ -51,10 +51,8 @@ sporty_web_assignment/
 │   │   └── logger.py             # Logging configuration
 │   └── reporters/
 │       ├── allure_reporter.py    # Allure reporting utilities
-│       └── html_reporter.py      # HTML reporting utilities
 ├── reports/                      # Test reports and artifacts
 │   ├── allure/                   # Allure reports
-│   ├── html/                     # HTML reports
 │   ├── logs/                     # Test logs
 │   └── screenshots/              # Test screenshots
 ├── conftest.py                   # Pytest configuration and CLI options
@@ -153,7 +151,6 @@ The framework provides comprehensive CLI options for flexible test execution:
 
 #### **Reporting Options**
 ```bash
---html-report                # Enable HTML report generation
 --allure-report              # Enable Allure report generation
 --open-allure                # Automatically open Allure report in browser
                              # (requires --allure-report and Allure CLI)
@@ -168,7 +165,6 @@ python -m pytest tests/ \
   --env production \
   --headless \
   --test-timeout 60 \
-  --html-report \
   --allure-report \
   --open-allure \
   --screenshot-on-failure
@@ -183,17 +179,15 @@ python -m pytest tests/ -v -s --test-timeout 120
 ### With Reporting
 
 ```bash
-# HTML report only
-python -m pytest tests/ --html-report --html reports/html/test_report.html --self-contained-html
 
 # Allure report only
 python -m pytest tests/ --allure-report --alluredir reports/allure/results
 
-# Both reports with auto-open Allure
-python -m pytest tests/ --html-report --allure-report --open-allure
+# Allure report with auto-open
+python -m pytest tests/ --allure-report --open-allure
 
 # Complete test run with all features
-python -m pytest tests/ --headless --html-report --allure-report --open-allure -v
+python -m pytest tests/ --headless --allure-report --open-allure -v
 
 # Production environment with all features
 python -m pytest tests/ --env production --headless --allure-report --open-allure
@@ -285,7 +279,7 @@ The framework includes a comprehensive CI/CD pipeline:
 **Features:**
 - **Python 3.9 Testing**: Consistent testing environment
 - **Automated Browser Setup**: Chrome installation and configuration
-- **Comprehensive Reporting**: HTML, Allure, screenshots, and logs
+- **Comprehensive Reporting**: Allure reports, screenshots, and logs
 - **Artifact Management**: 30-day retention for all test artifacts
 - **GitHub Pages Deployment**: Automatic Allure report publishing
 
@@ -295,7 +289,7 @@ The framework includes a comprehensive CI/CD pipeline:
 - Manual trigger via GitHub UI
 
 #### **Allure Reports on GitHub Pages**
-Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/index.html`
+Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/`
 
 ### Setting Up CI/CD
 
@@ -306,7 +300,7 @@ Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty
    - Go to **Settings** → **Actions** → **General**
    - Under **Workflow permissions**, select **Read and write permissions**
 3. **Push to main branch** - Reports will be automatically deployed
-   - Allure reports will be available at: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/index.html`
+   - Allure reports will be available at: `https://vietphamqq.github.io/sporty_web_assignment/{run_number}/`
 
 **Optional:**
 - **Repository Secrets**: No secrets required for basic functionality
@@ -461,13 +455,6 @@ Each exception provides:
 
 ## 📊 Reporting
 
-### HTML Reports
-
-- **Self-Contained**: Single file with embedded CSS/JS
-- **Rich Content**: Screenshots, logs, metadata
-- **Interactive**: Expandable sections, filtering
-- **CI/CD Ready**: Artifact upload and download
-
 ### Allure Reports
 
 - **Professional UI**: Modern, interactive interface
@@ -502,7 +489,6 @@ PARALLEL_EXECUTION=true          # Parallel test execution (default: true)
 MAX_WORKERS=4                    # Number of parallel workers (default: 4)
 
 # Reporting Configuration
-HTML_REPORT=true                 # HTML report generation (default: true)
 ALLURE_REPORT=true              # Allure report generation (default: true)
 REPORT_DIR=reports              # Report directory (default: reports)
 LOG_LEVEL=INFO                  # Logging level (default: INFO)

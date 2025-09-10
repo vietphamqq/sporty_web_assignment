@@ -43,7 +43,6 @@ class TestConfig:
 class ReportConfig:
     """Reporting configuration"""
 
-    html_report: bool = ReportConstants.HTML_REPORT_ENABLED
     allure_report: bool = ReportConstants.ALLURE_REPORT_ENABLED
     report_dir: str = ReportConstants.DEFAULT_REPORT_DIR
     log_level: str = ReportConstants.DEFAULT_LOG_LEVEL
@@ -96,7 +95,6 @@ class Settings:
     def get_report_config(cls) -> ReportConfig:
         """Get report configuration with environment overrides"""
         return ReportConfig(
-            html_report=os.getenv("HTML_REPORT", "true").lower() == "true",
             allure_report=os.getenv("ALLURE_REPORT", "true").lower() == "true",
             report_dir=os.getenv("REPORT_DIR", "reports"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),

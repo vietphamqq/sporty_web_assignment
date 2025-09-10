@@ -59,14 +59,12 @@ class ReportConstants:
     DEFAULT_LOG_LEVEL = "INFO"
     
     # Report subdirectories
-    HTML_REPORT_DIR = "html"
     ALLURE_REPORT_DIR = "allure"
     ALLURE_RESULTS_DIR = "results"
     SCREENSHOTS_DIR = "screenshots"
     LOGS_DIR = "logs"
     
     # Report generation
-    HTML_REPORT_ENABLED = True
     ALLURE_REPORT_ENABLED = True
     SCREENSHOT_ON_FAILURE = True
 

@@ -4,13 +4,11 @@ Twitch Web automation test using Design Patterns
 - Factory Pattern
 """
 
-from core.base.test_base import TestBase
-from core.driver_manager import DriverManager
-from core.exceptions.framework_exceptions import DriverException
+from core.base.test_base import BaseTest
 from pages.twitch_home_page import TwitchHomePage
 
 
-class TestTwitch(TestBase):
+class TestTwitch(BaseTest):
     """Twitch Web automation test using Page Object Model"""
 
     def _setup_test_data(self):
@@ -18,24 +16,19 @@ class TestTwitch(TestBase):
         self.search_term = "Starcraft II"
 
     def _setup_test_environment(self):
-        """Setup Web test environment using Driver Manager (Factory Pattern)"""
-        try:
-            # Setup web driver
-            self.driver = DriverManager.get_mobile_driver()
-
-            # Initialize page objects
+        """Setup Web test environment - driver is provided by conftest.py fixture"""
+        # This will be called after driver is set in the test method
+        if hasattr(self, 'driver'):
             self.home_page = TwitchHomePage(self.driver)
 
-        except DriverException as e:
-            self.logger.error(f"Failed to create mobile driver: {e}")
-            raise
-
-    def _cleanup_test_environment(self):
-        """Cleanup Web test environment"""
-        DriverManager.quit_driver()  # Now worker-aware
-
-    def test_twitch_search_and_navigate_to_streamer(self):
+    def test_twitch_search_and_navigate_to_streamer(self, driver):
         """Test: Go to Twitch, search for Starcraft II, scroll, select streamer, and take screenshot"""
+        # Set driver as instance variable for use in setup methods
+        self.driver = driver
+        
+        # Setup test environment with driver
+        self._setup_test_environment()
+        
         self.log_test_step("Starting Twitch test")
 
         # Step 1: Go to Twitch

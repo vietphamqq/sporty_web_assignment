@@ -49,7 +49,6 @@ jobs:
         
     - name: Create reports directories
       run: |
-        mkdir -p reports/html
         mkdir -p reports/allure/results
         mkdir -p reports/screenshots
         mkdir -p reports/logs
@@ -58,23 +57,12 @@ jobs:
       run: |
         python -m pytest tests/ \
           --headless \
-          --html-report \
-          --html reports/html/test_report.html \
-          --self-contained-html \
           --allure-report \
           --alluredir reports/allure/results \
           -v \
           --tb=short
       env:
         HEADLESS: true
-        
-    - name: Upload HTML test report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: html-test-report
-        path: reports/html/
-        retention-days: 30
         
     - name: Upload Allure results
       uses: actions/upload-artifact@v4

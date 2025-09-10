@@ -79,7 +79,8 @@ class TwitchSearchPage(BasePage):
         """Select the first available streamer from search results
 
         Returns:
-            bool: True if streamer was selected successfully, False otherwise
+            TwitchStreamerPage: Instance of TwitchStreamerPage if successful
+            bool: False if no streamer found or error occurs
         """
         try:
             # Use flexible locators to find and click first streamer

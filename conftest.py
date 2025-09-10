@@ -1,10 +1,18 @@
 """
 Pytest configuration file with parallel execution support
+
+This module provides:
+- Custom command line options for test configuration
+- Fixtures for driver management and test setup
+- Hooks for reporting, screenshots, and cleanup
+- Parallel execution support with worker management
 """
 
 import os
+import subprocess
 import threading
-from typing import Optional
+import time
+from pathlib import Path
 
 import pytest
 
@@ -39,12 +47,6 @@ def pytest_addoption(parser):
 
 
     # Reporting options
-    parser.addoption(
-        "--html-report",
-        action="store_true",
-        default=False,
-        help="Enable HTML report generation",
-    )
 
     parser.addoption(
         "--allure-report",
@@ -79,7 +81,6 @@ def test_config(request) -> dict:
         "environment": request.config.getoption("--env"),
         "headless": request.config.getoption("--headless"),
         "timeout": request.config.getoption("--test-timeout"),
-        "html_report": request.config.getoption("--html-report"),
         "allure_report": request.config.getoption("--allure-report"),
         "open_allure": request.config.getoption("--open-allure"),
         "screenshot_on_failure": request.config.getoption("--screenshot-on-failure"),
@@ -97,7 +98,6 @@ def parallel_session_setup(request):
     # Initialize environment configuration
     try:
         from config.environment_manager import EnvironmentManager
-        env_config = EnvironmentManager.get_environment(environment)
         env_info = EnvironmentManager.get_environment_info()
         print(f"\n🌍 Environment: {env_info['name']} ({env_info['description']})")
         print(f"🔗 Base URL: {env_info['base_url']}")
@@ -122,19 +122,22 @@ def parallel_session_setup(request):
 
 
 @pytest.fixture(scope="function")
-def isolated_driver():
-    """Provides an isolated WebDriver instance for each test
+def driver():
+    """Provides a WebDriver instance for each test
 
     This fixture ensures complete test isolation in parallel execution
+    and handles automatic cleanup.
     """
     from core.driver_manager import DriverManager
 
     # Get worker-specific driver
     driver = DriverManager.get_mobile_driver()
+    print("\n🧪 New WebDriver instance created for test")
 
     yield driver
 
     # Cleanup is handled automatically by DriverManager per worker
+    DriverManager.quit_driver()
 
 
 def pytest_configure(config):
@@ -156,9 +159,6 @@ def pytest_configure(config):
     if hasattr(config.option, "headless") and config.getoption("--headless"):
         os.environ["HEADLESS"] = "true"
 
-    if hasattr(config.option, "html_report") and config.getoption("--html-report"):
-        os.environ["HTML_REPORT"] = "true"
-
     if hasattr(config.option, "allure_report") and config.getoption("--allure-report"):
         os.environ["ALLURE_REPORT"] = "true"
 
@@ -175,8 +175,6 @@ def pytest_configure(config):
             os.makedirs(default_allure_dir, exist_ok=True)
 
         # Early validation: Check if Allure CLI is available
-        import subprocess
-
         try:
             subprocess.run(["allure", "--version"], capture_output=True, check=True)
         except (FileNotFoundError, subprocess.CalledProcessError):
@@ -300,11 +298,6 @@ def pytest_sessionfinish(session, exitstatus):
         and config.getoption("--open-allure")
     ):
 
-        import subprocess
-        import threading
-        import time
-        import webbrowser
-        from pathlib import Path
 
         # Get the allure results directory
         allure_dir = None

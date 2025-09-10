@@ -49,7 +49,8 @@ class TwitchHomePage(BasePage):
         """Click the search button/icon
 
         Returns:
-            bool: True if search button was clicked successfully, False otherwise
+            TwitchSearchPage: Instance of TwitchSearchPage if navigation is successful
+            bool: False if the search button is not found
         """
         try:
             # Use flexible locators - try multiple selectors in sequence

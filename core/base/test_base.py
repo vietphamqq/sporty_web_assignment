@@ -9,10 +9,9 @@ from typing import Any, Dict, Optional
 from config.settings import Settings
 from utils.loggers.logger import Logger
 from utils.reporters.allure_reporter import AllureReporter
-from utils.reporters.html_reporter import HTMLReporter
 
 
-class TestBase(ABC):
+class BaseTest(ABC):
     """Base class for all tests providing common setup, teardown, logging, and reporting"""
 
     def setup_method(self):
@@ -32,7 +31,6 @@ class TestBase(ABC):
 
     def _setup_reporters(self):
         """Setup reporting systems"""
-        self.html_reporter = HTMLReporter() if Settings.REPORT.html_report else None
         self.allure_reporter = (
             AllureReporter() if Settings.REPORT.allure_report else None
         )
@@ -54,14 +52,14 @@ class TestBase(ABC):
         """Setup test-specific data - to be implemented by subclasses"""
         pass
 
-    @abstractmethod
     def _setup_test_environment(self):
-        """Setup test-specific environment - to be implemented by subclasses"""
+        """Setup test-specific environment - can be overridden by subclasses"""
+        # Default implementation - subclasses can override if needed
         pass
 
-    @abstractmethod
     def _cleanup_test_environment(self):
-        """Cleanup test-specific environment - to be implemented by subclasses"""
+        """Cleanup test-specific environment - can be overridden by subclasses"""
+        # Default implementation - subclasses can override if needed
         pass
 
     def add_test_data(self, key: str, value: Any):

@@ -163,7 +163,6 @@ cython_debug/
 
 # Test reports and artifacts
 reports/allure/results/
-reports/html/
 reports/logs/
 reports/screenshots/
 *.png

@@ -10,7 +10,6 @@ from ..constants import (
     TimeoutConstants,
     TestConstants,
     ReportConstants,
-    URLConstants,
 )
 
 
