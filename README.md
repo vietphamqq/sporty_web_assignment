@@ -237,9 +237,6 @@ The framework includes a comprehensive CI/CD pipeline:
 - **Comprehensive Reporting**: HTML, Allure, screenshots, and logs
 - **Artifact Management**: 30-day retention for all test artifacts
 - **GitHub Pages Deployment**: Automatic Allure report publishing
-- **Code Quality Checks**: Black, isort, flake8, mypy
-- **Security Scanning**: Safety and Bandit security analysis
-- **Smart Notifications**: Success/failure notifications
 
 **Triggers:**
 - Push to `main` or `develop` branches

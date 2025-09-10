@@ -1,6 +1,7 @@
 """
 Twitch Search Page - Page Object Model
 """
+
 from typing import List
 
 from selenium.webdriver.common.by import By
@@ -26,20 +27,23 @@ class TwitchSearchPage(BasePage):
 
     def search_for_term(self, search_term: str) -> bool:
         """Perform search for the given term
-        
+
         Args:
             search_term: The term to search for
-            
+
         Returns:
             bool: True if search was performed successfully, False otherwise
         """
         try:
             # Find search input using flexible locators
-            search_input = self.find_element([
-                self.SEARCH_INPUT,
-                (By.CSS_SELECTOR, "input[type=search]"),
-                (By.CSS_SELECTOR, "input[placeholder*='Search']")
-            ], timeout=5)
+            search_input = self.find_element(
+                [
+                    self.SEARCH_INPUT,
+                    (By.CSS_SELECTOR, "input[type=search]"),
+                    (By.CSS_SELECTOR, "input[placeholder*='Search']"),
+                ],
+                timeout=5,
+            )
 
             # Clear and input search term
             search_input.clear()
@@ -52,7 +56,7 @@ class TwitchSearchPage(BasePage):
 
     def get_search_category_results(self) -> List[WebElement]:
         """Get all search result elements
-        
+
         Returns:
             list: List of search result elements, empty list if none found
         """
@@ -65,18 +69,23 @@ class TwitchSearchPage(BasePage):
 
     def wait_for_search_streamer_results(self) -> bool:
         self.wait_for_page_load()
-        return self.is_element_present(self.STREAMER_LINK) and self.is_element_present(self.STREAMER_PREVIEW)
+        return self.is_element_present(self.STREAMER_LINK) and self.is_element_present(
+            self.STREAMER_PREVIEW
+        )
 
     def select_first_streamer(self) -> bool:
         """Select the first available streamer from search results
-        
+
         Returns:
             bool: True if streamer was selected successfully, False otherwise
         """
         try:
             # Use flexible locators to find and click first streamer
-            streamer_elements = [x for x in self.find_elements(self.STREAMER_LINK) if
-                                 self.is_element_within_viewport(x)]
+            streamer_elements = [
+                x
+                for x in self.find_elements(self.STREAMER_LINK)
+                if self.is_element_within_viewport(x)
+            ]
 
             if streamer_elements:
                 streamer_elements[0].click()

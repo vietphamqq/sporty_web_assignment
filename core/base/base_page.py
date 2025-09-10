@@ -1,20 +1,22 @@
 """
 Base page class for Web automation using Page Object Model
 """
+
 import time
-from typing import Optional, List, Tuple, Any, Union
+from typing import Any, List, Optional, Tuple, Union
+
+from selenium.common.exceptions import (NoSuchElementException,
+                                        TimeoutException, WebDriverException)
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import Settings
-from core.exceptions.framework_exceptions import (
-    ElementNotFoundException,
-    PageNotFoundException,
+from core.exceptions.framework_exceptions import (ElementNotFoundException,
+                                                  PageNotFoundException)
+from core.exceptions.framework_exceptions import \
     TimeoutException as SportyTimeoutException
-)
 
 
 class BasePage:
@@ -26,10 +28,10 @@ class BasePage:
 
     def navigate_to(self, url: str) -> None:
         """Navigate to a specific URL
-        
+
         Args:
             url: URL to navigate to
-            
+
         Raises:
             PageNotFoundException: If page fails to load
         """
@@ -49,7 +51,9 @@ class BasePage:
         """Get the current URL"""
         return self.driver.current_url
 
-    def find_element(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> WebElement:
+    def find_element(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> WebElement:
         """Find a single element with explicit wait
 
         Args:
@@ -82,8 +86,9 @@ class BasePage:
         # If we get here, all locators failed
         raise ElementNotFoundException(locators, timeout=wait_time)
 
-    def find_elements(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> List[
-        WebElement]:
+    def find_elements(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> List[WebElement]:
         """Find multiple elements
 
         Args:
@@ -111,7 +116,9 @@ class BasePage:
 
         return []
 
-    def click_element(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> None:
+    def click_element(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> None:
         """Click an element with explicit wait
 
         Args:
@@ -125,7 +132,9 @@ class BasePage:
         locators = [locator] if isinstance(locator, tuple) else locator
 
         if not locators:
-            raise ElementNotFoundException([], "No locators provided for click operation")
+            raise ElementNotFoundException(
+                [], "No locators provided for click operation"
+            )
 
         wait_time = timeout or Settings.BROWSER.explicit_wait
         wait = WebDriverWait(self.driver, wait_time)
@@ -141,10 +150,16 @@ class BasePage:
                     continue
 
         # If we get here, all locators failed
-        raise ElementNotFoundException(locators, "Clickable element not found", wait_time)
+        raise ElementNotFoundException(
+            locators, "Clickable element not found", wait_time
+        )
 
-    def send_keys(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], text: str,
-                  clear_first: bool = True) -> None:
+    def send_keys(
+        self,
+        locator: Union[Tuple[str, str], List[Tuple[str, str]]],
+        text: str,
+        clear_first: bool = True,
+    ) -> None:
         """Send keys to an element
 
         Args:
@@ -169,7 +184,9 @@ class BasePage:
         element = self.find_element(locator)
         return element.text
 
-    def get_attribute(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], attribute: str) -> str:
+    def get_attribute(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], attribute: str
+    ) -> str:
         """Get attribute value from an element
 
         Args:
@@ -182,7 +199,9 @@ class BasePage:
         element = self.find_element(locator)
         return element.get_attribute(attribute)
 
-    def is_element_present(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> bool:
+    def is_element_present(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> bool:
         """Check if element is present
 
         Args:
@@ -209,7 +228,9 @@ class BasePage:
 
         return False
 
-    def is_element_not_present(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> bool:
+    def is_element_not_present(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> bool:
         """Check if element is not present
 
         Args:
@@ -236,7 +257,9 @@ class BasePage:
 
         return False
 
-    def is_element_visible(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> bool:
+    def is_element_visible(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> bool:
         """Check if element is visible
 
         Args:
@@ -263,7 +286,9 @@ class BasePage:
 
         return False
 
-    def is_element_clickable(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5) -> bool:
+    def is_element_clickable(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], timeout: int = 5
+    ) -> bool:
         """Check if element is clickable
 
         Args:
@@ -290,8 +315,12 @@ class BasePage:
 
         return False
 
-    def wait_for_text(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]], text: str,
-                      timeout: int = None) -> bool:
+    def wait_for_text(
+        self,
+        locator: Union[Tuple[str, str], List[Tuple[str, str]]],
+        text: str,
+        timeout: int = None,
+    ) -> bool:
         """Wait for specific text in element
 
         Args:
@@ -320,8 +349,11 @@ class BasePage:
 
         return False
 
-    def wait_for_element_to_disappear(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]],
-                                      timeout: int = None) -> bool:
+    def wait_for_element_to_disappear(
+        self,
+        locator: Union[Tuple[str, str], List[Tuple[str, str]]],
+        timeout: int = None,
+    ) -> bool:
         """Wait for element to disappear
 
         Args:
@@ -349,7 +381,9 @@ class BasePage:
 
         return False
 
-    def scroll_to_element(self, locator: Union[Tuple[str, str], List[Tuple[str, str]]]) -> None:
+    def scroll_to_element(
+        self, locator: Union[Tuple[str, str], List[Tuple[str, str]]]
+    ) -> None:
         """Scroll to an element
 
         Args:
@@ -369,13 +403,15 @@ class BasePage:
     def scroll_down_in_viewport(self):
         """Scroll down by one viewport height"""
         viewport_height = self.driver.execute_script("return window.innerHeight;")
-        self.driver.execute_script(f"""
+        self.driver.execute_script(
+            f"""
                 window.scrollBy({{
                     top: {viewport_height},
                     left: 0,
                     behavior: "smooth"
                 }});
-            """)
+            """
+        )
         time.sleep(2)  # Allow time for content to load
 
     def is_element_within_viewport(self, element: WebElement) -> bool:
@@ -391,7 +427,9 @@ class BasePage:
                         return true;
                 }
                 return false;
-                """, element)
+                """,
+                element,
+            )
         except WebDriverException:
             return False
 
@@ -418,34 +456,37 @@ class BasePage:
 
     def take_screenshot(self, filename: str = None, include_device: bool = True) -> str:
         """Take a screenshot and return the file path
-        
+
         Args:
             filename: Optional filename for the screenshot
             include_device: Whether to include device name in filename
-            
+
         Returns:
             str: Path to the screenshot file
         """
         if not filename:
             import time
+
             timestamp = time.strftime("%Y%m%d_%H%M%S")
-            
+
             # Try to get current device name for better filename
             device_suffix = ""
             if include_device:
                 try:
                     from core.driver_manager import DriverManager
+
                     current_device = DriverManager.get_current_device()
                     if current_device:
                         # Convert device name to filename-safe format
                         device_suffix = f"_{current_device.lower().replace(' ', '_').replace('+', '_plus')}"
                 except:
                     pass  # If we can't get device name, just continue without it
-            
+
             filename = f"screenshot_{timestamp}{device_suffix}.png"
 
         # Ensure screenshots directory exists
         import os
+
         screenshot_dir = os.path.join(Settings.REPORT.report_dir, "screenshots")
         os.makedirs(screenshot_dir, exist_ok=True)
 
@@ -480,20 +521,21 @@ class BasePage:
         """Go forward to next page"""
         self.driver.forward()
         self.wait_for_page_load()
-    
+
     def _wait_for_page_load(self, timeout: int = None) -> bool:
         """Internal method to wait for page to load completely
-        
+
         Args:
             timeout: Optional timeout override
-            
+
         Returns:
             bool: True if page loaded successfully, False otherwise
         """
         timeout = timeout or Settings.BROWSER.page_load_timeout
         try:
             WebDriverWait(self.driver, timeout).until(
-                lambda driver: driver.execute_script("return document.readyState") == "complete"
+                lambda driver: driver.execute_script("return document.readyState")
+                == "complete"
             )
             return True
         except TimeoutException:

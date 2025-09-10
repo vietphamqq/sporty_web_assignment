@@ -5,10 +5,8 @@ Twitch Web automation test using Design Patterns
 """
 
 from core.base.test_base import TestBase
-from core.exceptions.framework_exceptions import (
-    DriverException
-)
 from core.driver_manager import DriverManager
+from core.exceptions.framework_exceptions import DriverException
 from pages.twitch_home_page import TwitchHomePage
 from pages.twitch_search_page import TwitchSearchPage
 from pages.twitch_streamer_page import TwitchStreamerPage
@@ -31,7 +29,7 @@ class TestTwitch(TestBase):
             self.home_page = TwitchHomePage(self.driver)
             self.search_page = TwitchSearchPage(self.driver)
             self.streamer_page = TwitchStreamerPage(self.driver)
-            
+
         except DriverException as e:
             self.logger.error(f"Failed to create mobile driver: {e}")
             raise
@@ -50,7 +48,9 @@ class TestTwitch(TestBase):
 
         # Verify we're on Twitch
         current_url = self.driver.current_url
-        assert "m.twitch.tv" in current_url, f"Expected to be on Twitch, but current URL is: {current_url}"
+        assert (
+            "m.twitch.tv" in current_url
+        ), f"Expected to be on Twitch, but current URL is: {current_url}"
 
         # Step 2: Click search button
         self.log_test_step("Step 2: Click search button")
@@ -63,7 +63,9 @@ class TestTwitch(TestBase):
         assert search_successful, "Failed to input search term"
 
         # Step 3.5: Select Starcraft II first search result
-        self.log_test_step("Step 3.5: Select 'Starcraft II' from search results if available")
+        self.log_test_step(
+            "Step 3.5: Select 'Starcraft II' from search results if available"
+        )
         search_results = self.search_page.get_search_category_results()
         assert len(search_results) > 0, "No search results found"
         search_results[0].click()
@@ -79,7 +81,9 @@ class TestTwitch(TestBase):
         assert streamer_selected, "Failed to select streamer, no streamer found"
 
         # Step 6: Wait until all is loaded then take screenshot
-        self.log_test_step("Step 6: Wait for streamer page to load completely and take screenshot")
+        self.log_test_step(
+            "Step 6: Wait for streamer page to load completely and take screenshot"
+        )
 
         # Wait for streamer page to load completely
         streamer_loaded = self.streamer_page.wait_for_streamer_page_load()
@@ -89,8 +93,11 @@ class TestTwitch(TestBase):
         screenshot_path = self.streamer_page.take_screenshot("twitch_streamer.png")
         assert screenshot_path is not None, "Screenshot was not taken successfully"
 
-        self.log_test_step("Test completed successfully", {
-            "search_term": self.search_term,
-            "final_url": self.streamer_page.current_url,
-            "screenshot": screenshot_path
-        })
+        self.log_test_step(
+            "Test completed successfully",
+            {
+                "search_term": self.search_term,
+                "final_url": self.streamer_page.current_url,
+                "screenshot": screenshot_path,
+            },
+        )

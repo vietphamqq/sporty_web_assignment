@@ -1,6 +1,7 @@
 """
 Twitch Streamer Page - Page Object Model
 """
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -23,9 +24,11 @@ class TwitchStreamerPage(BasePage):
         """Check if streamer page is fully loaded"""
         try:
             # Use flexible locators to check for streamer page elements
-            return (self.is_element_present(self.FOLLOW_BUTTON, timeout=5) and
-                    self.is_element_present(self.ABOUT_MENU, timeout=5) and
-                    self.is_element_present(self.VIDEOS, timeout=5))
+            return (
+                self.is_element_present(self.FOLLOW_BUTTON, timeout=5)
+                and self.is_element_present(self.ABOUT_MENU, timeout=5)
+                and self.is_element_present(self.VIDEOS, timeout=5)
+            )
         except:
             return False
 

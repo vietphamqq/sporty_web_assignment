@@ -1,35 +1,43 @@
 """
 HTML reporting utilities for test results
 """
-import os
+
 import json
+import os
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from config.settings import Settings
 
+
 class HTMLReporter:
     """HTML report generator for test results"""
-    
+
     def __init__(self):
         self.report_dir = Settings.REPORT.report_dir
         self.html_dir = os.path.join(self.report_dir, "html")
         self.test_results = []
         self.start_time = None
         self.end_time = None
-        
+
         # Ensure report directory exists
         os.makedirs(self.html_dir, exist_ok=True)
-    
+
     def start_test_suite(self, suite_name: str = "Test Suite"):
         """Start a new test suite"""
         self.start_time = datetime.now()
         self.test_results = []
         self.suite_name = suite_name
-    
-    def add_test_result(self, test_name: str, status: str, duration: float, 
-                       error_message: str = None, screenshot_path: str = None, 
-                       details: Dict[str, Any] = None):
+
+    def add_test_result(
+        self,
+        test_name: str,
+        status: str,
+        duration: float,
+        error_message: str = None,
+        screenshot_path: str = None,
+        details: Dict[str, Any] = None,
+    ):
         """Add a test result"""
         result = {
             "test_name": test_name,
@@ -38,44 +46,50 @@ class HTMLReporter:
             "timestamp": datetime.now().isoformat(),
             "error_message": error_message,
             "screenshot_path": screenshot_path,
-            "details": details or {}
+            "details": details or {},
         }
         self.test_results.append(result)
-    
+
     def end_test_suite(self):
         """End the test suite and generate report"""
         self.end_time = datetime.now()
         self._generate_html_report()
-    
+
     def _generate_html_report(self):
         """Generate HTML report"""
         total_tests = len(self.test_results)
         passed_tests = len([r for r in self.test_results if r["status"] == "PASSED"])
         failed_tests = len([r for r in self.test_results if r["status"] == "FAILED"])
         skipped_tests = len([r for r in self.test_results if r["status"] == "SKIPPED"])
-        
+
         total_duration = (self.end_time - self.start_time).total_seconds()
-        
+
         html_content = self._generate_html_template(
             total_tests, passed_tests, failed_tests, skipped_tests, total_duration
         )
-        
+
         # Write HTML file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"test_report_{timestamp}.html"
         filepath = os.path.join(self.html_dir, filename)
-        
-        with open(filepath, 'w', encoding='utf-8') as f:
+
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write(html_content)
-        
+
         print(f"HTML report generated: {filepath}")
         return filepath
-    
-    def _generate_html_template(self, total_tests: int, passed_tests: int, 
-                               failed_tests: int, skipped_tests: int, total_duration: float) -> str:
+
+    def _generate_html_template(
+        self,
+        total_tests: int,
+        passed_tests: int,
+        failed_tests: int,
+        skipped_tests: int,
+        total_duration: float,
+    ) -> str:
         """Generate HTML template"""
         pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
+
         return f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -153,7 +167,7 @@ class HTMLReporter:
 </body>
 </html>
         """
-    
+
     def _get_css_styles(self) -> str:
         """Get CSS styles for the report"""
         return """
@@ -355,7 +369,7 @@ class HTMLReporter:
             margin-top: 5px;
         }
         """
-    
+
     def _generate_test_rows(self) -> str:
         """Generate HTML rows for test results"""
         rows = []
@@ -363,16 +377,18 @@ class HTMLReporter:
             status_class = result["status"]
             error_html = ""
             if result["error_message"]:
-                error_html = f'<div class="error-message">{result["error_message"]}</div>'
-            
+                error_html = (
+                    f'<div class="error-message">{result["error_message"]}</div>'
+                )
+
             screenshot_html = ""
             if result["screenshot_path"]:
                 screenshot_html = f'<img src="{result["screenshot_path"]}" class="screenshot" onclick="openScreenshot(this.src)">'
-            
+
             details_html = ""
             if result["details"]:
                 details_html = f'<div class="details">{json.dumps(result["details"], indent=2)}</div>'
-            
+
             row = f"""
             <tr>
                 <td>{result["test_name"]}</td>
@@ -387,9 +403,9 @@ class HTMLReporter:
             </tr>
             """
             rows.append(row)
-        
+
         return "".join(rows)
-    
+
     def _get_javascript(self) -> str:
         """Get JavaScript for the report"""
         return """
