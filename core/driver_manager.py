@@ -133,6 +133,12 @@ class DriverManager:
             chrome_options.add_argument("--remote-debugging-port=0")  # Auto-assign debug port
             chrome_options.add_argument("--user-data-dir=/tmp/chrome_dev_test")  # Separate user data
             
+            # Reduce overlays and consent prompts
+            chrome_options.add_argument("--disable-infobars")
+            chrome_options.add_argument("--disable-notifications")
+            chrome_options.add_argument("--disable-popup-blocking")
+            chrome_options.add_argument("--disable-default-apps")
+            
             # Mobile-specific preferences
             prefs = {
                 "profile.default_content_setting_values": {

@@ -197,6 +197,43 @@ def pytest_report_header(config):
     ]
 
 
+def pytest_runtest_makereport(item, call):
+    """Hook to capture screenshots on test failure"""
+    if call.when == "call" and call.excinfo is not None:
+        # Test failed, try to capture screenshot
+        try:
+            from core.driver_manager import DriverManager
+            worker_key = DriverManager._get_worker_key()
+            
+            if worker_key in DriverManager._drivers:
+                driver = DriverManager._drivers[worker_key]
+                
+                # Create screenshots directory
+                import os
+                screenshot_dir = os.path.join("reports", "screenshots")
+                os.makedirs(screenshot_dir, exist_ok=True)
+                
+                # Generate screenshot filename
+                test_name = item.name.replace("::", "_").replace("/", "_")
+                timestamp = str(int(call.start * 1000))  # Use call start time
+                screenshot_path = os.path.join(screenshot_dir, f"FAILURE_{test_name}_{timestamp}.png")
+                
+                # Take screenshot
+                driver.save_screenshot(screenshot_path)
+                print(f"\n📸 Screenshot captured on failure: {screenshot_path}")
+                
+                # Attach to Allure if available
+                try:
+                    import allure
+                    with open(screenshot_path, "rb") as image_file:
+                        allure.attach(image_file.read(), name="Failure Screenshot", attachment_type=allure.attachment_type.PNG)
+                except ImportError:
+                    pass  # Allure not available, skip attachment
+                    
+        except Exception as e:
+            print(f"\n⚠️  Failed to capture screenshot on failure: {e}")
+
+
 def pytest_sessionfinish(session, exitstatus):
     """Called after whole test run finished, right before returning the exit status to the system"""
     
