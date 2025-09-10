@@ -10,6 +10,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from config.settings import Settings
+from config.constants import (
+    FrameworkConstants,
+    ReportConstants,
+    AllureConstants,
+)
 
 
 class AllureReporter:
@@ -17,8 +22,8 @@ class AllureReporter:
 
     def __init__(self):
         self.report_dir = Settings.REPORT.report_dir
-        self.allure_dir = os.path.join(self.report_dir, "allure")
-        self.results_dir = os.path.join(self.allure_dir, "results")
+        self.allure_dir = os.path.join(self.report_dir, ReportConstants.ALLURE_REPORT_DIR)
+        self.results_dir = os.path.join(self.allure_dir, ReportConstants.ALLURE_RESULTS_DIR)
 
         # Ensure directories exist
         os.makedirs(self.results_dir, exist_ok=True)
@@ -83,10 +88,8 @@ class AllureReporter:
         labels = [
             {"name": "suite", "value": self.suite_name},
             {"name": "testClass", "value": test_name},
-            {"name": "framework", "value": "Sporty Web Assignment Testing Framework"},
-            {"name": "language", "value": "python"},
-            {"name": "package", "value": "sporty_web_assignment"},
         ]
+        labels.extend(AllureConstants.DEFAULT_LABELS)
 
         if custom_labels:
             labels.extend(custom_labels)
@@ -189,9 +192,9 @@ class AllureReporter:
     def generate_environment_properties(self, properties: Dict[str, str] = None):
         """Generate environment.properties file for Allure"""
         default_properties = {
-            "Framework": "Sporty Web Assignment Testing Framework",
-            "Version": "1.0.0",
-            "Python": "3.8+",
+            "Framework": FrameworkConstants.FRAMEWORK_NAME,
+            "Version": FrameworkConstants.VERSION,
+            "Python": f"{FrameworkConstants.MIN_PYTHON_VERSION}+",
             "Browser": Settings.BROWSER.name,
             "Headless": str(Settings.BROWSER.headless),
             "Parallel": str(Settings.TEST.parallel_execution),
@@ -208,23 +211,7 @@ class AllureReporter:
 
     def generate_categories(self, categories: List[Dict[str, Any]] = None):
         """Generate categories.json file for Allure"""
-        default_categories = [
-            {
-                "name": "Test defects",
-                "matchedStatuses": ["failed"],
-                "messageRegex": ".*AssertionError.*",
-            },
-            {
-                "name": "Product defects",
-                "matchedStatuses": ["failed"],
-                "messageRegex": ".*ElementNotFoundException.*",
-            },
-            {
-                "name": "Test infrastructure",
-                "matchedStatuses": ["broken", "failed"],
-                "messageRegex": ".*DriverException.*",
-            },
-        ]
+        default_categories = AllureConstants.DEFAULT_CATEGORIES.copy()
 
         if categories:
             default_categories.extend(categories)

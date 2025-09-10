@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Optional
 
 from config.settings import Settings
+from config.constants import LoggingConstants, ReportConstants
 
 
 class Logger:
@@ -35,8 +36,8 @@ class Logger:
 
         # Create formatter
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
+            LoggingConstants.LOG_FORMAT,
+            datefmt=LoggingConstants.DATE_FORMAT,
         )
 
         # Console handler
@@ -47,11 +48,11 @@ class Logger:
 
         # File handler
         if cls._log_dir is None:
-            cls._log_dir = os.path.join(Settings.REPORT.report_dir, "logs")
+            cls._log_dir = os.path.join(Settings.REPORT.report_dir, ReportConstants.LOGS_DIR)
             os.makedirs(cls._log_dir, exist_ok=True)
 
         log_file = os.path.join(
-            cls._log_dir, f"{name}_{datetime.now().strftime('%Y%m%d')}.log"
+            cls._log_dir, f"{name}_{datetime.now().strftime(LoggingConstants.LOG_DATE_PATTERN)}.log"
         )
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.DEBUG)

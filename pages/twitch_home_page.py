@@ -7,6 +7,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from core.base.base_page import BasePage
 from core.exceptions.framework_exceptions import ElementNotFoundException
+from config.constants import TimeoutConstants, URLConstants, BrowserConstants
 
 
 class TwitchHomePage(BasePage):
@@ -18,7 +19,9 @@ class TwitchHomePage(BasePage):
 
     def __init__(self, driver: WebDriver):
         super().__init__(driver)
-        self.url = "https://m.twitch.tv/"
+        # Get URL from environment configuration
+        from config.settings import Settings
+        self.url = Settings.get_test_url(URLConstants.HOME_URL_KEY)
 
     def navigate_to_home(self) -> None:
         """Navigate to Twitch home page"""
@@ -31,11 +34,14 @@ class TwitchHomePage(BasePage):
         """Dismiss the cookie consent modal if it appears"""
         try:
             # Check if the modal is present with a short timeout
-            if self.is_element_present(self.PROCEED_BUTTON, timeout=3):
-                self.click_element(self.PROCEED_BUTTON, timeout=5)
+            self.driver.implicitly_wait(TimeoutConstants.ELEMENT_CHECK_TIMEOUT)
+            if self.is_element_present(self.PROCEED_BUTTON, timeout=TimeoutConstants.ELEMENT_CHECK_TIMEOUT):
+                self.click_element(self.PROCEED_BUTTON, timeout=TimeoutConstants.QUICK_WAIT)
         except Exception:
             # Don't let cookie handling break the main test flow
             pass
+        finally:
+            self.driver.implicitly_wait(BrowserConstants.CHROME_IMPLICIT_WAIT)
 
     def click_search_button(self) -> bool:
         """Click the search button/icon
@@ -50,7 +56,7 @@ class TwitchHomePage(BasePage):
                     self.SEARCH_BUTTON,
                     (By.CSS_SELECTOR, "input[type='search']"),
                 ],
-                timeout=5,
+                timeout=TimeoutConstants.QUICK_WAIT,
             )
             return True
         except ElementNotFoundException:

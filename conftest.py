@@ -12,6 +12,15 @@ import pytest
 def pytest_addoption(parser):
     """Add custom command line options to pytest"""
 
+    # Environment options
+    parser.addoption(
+        "--env",
+        action="store",
+        default="production",
+        help="Environment to run tests against",
+        choices=["production", "prod"]
+    )
+
     # Framework options
     parser.addoption(
         "--headless",
@@ -28,13 +37,6 @@ def pytest_addoption(parser):
         help="Test timeout in seconds (default: 30)",
     )
 
-    parser.addoption(
-        "--retry-count",
-        action="store",
-        type=int,
-        default=0,
-        help="Number of retries for failed tests (default: 0)",
-    )
 
     # Reporting options
     parser.addoption(
@@ -74,9 +76,9 @@ def test_config(request) -> dict:
         dict: Test configuration dictionary
     """
     return {
+        "environment": request.config.getoption("--env"),
         "headless": request.config.getoption("--headless"),
         "timeout": request.config.getoption("--test-timeout"),
-        "retry_count": request.config.getoption("--retry-count"),
         "html_report": request.config.getoption("--html-report"),
         "allure_report": request.config.getoption("--allure-report"),
         "open_allure": request.config.getoption("--open-allure"),
@@ -87,6 +89,21 @@ def test_config(request) -> dict:
 @pytest.fixture(scope="session", autouse=True)
 def parallel_session_setup(request):
     """Automatic session-level setup for parallel execution"""
+    
+    # Set environment from CLI option
+    environment = request.config.getoption("--env")
+    os.environ["ENV"] = environment
+    
+    # Initialize environment configuration
+    try:
+        from config.environment_manager import EnvironmentManager
+        env_config = EnvironmentManager.get_environment(environment)
+        env_info = EnvironmentManager.get_environment_info()
+        print(f"\n🌍 Environment: {env_info['name']} ({env_info['description']})")
+        print(f"🔗 Base URL: {env_info['base_url']}")
+    except Exception as e:
+        print(f"\n⚠️  Warning: Failed to initialize environment '{environment}': {e}")
+        print("   Falling back to default configuration")
 
     # Check if running in parallel mode
     worker_id = getattr(request.config, "workerinput", {}).get("workerid")
@@ -128,6 +145,12 @@ def pytest_configure(config):
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
+
+    # Set environment from CLI option
+    if hasattr(config.option, "env"):
+        environment = config.getoption("--env")
+        os.environ["ENV"] = environment
+        print(f"🌍 Setting environment to: {environment}")
 
     # Set environment variables based on CLI options - use getattr to safely check if option exists
     if hasattr(config.option, "headless") and config.getoption("--headless"):
@@ -188,10 +211,21 @@ def pytest_configure(config):
 
 def pytest_report_header(config):
     """Add custom header to pytest report"""
+    environment = config.getoption("--env")
     headless = "Yes" if config.getoption("--headless") else "No"
     timeout = config.getoption("--test-timeout")
 
+    # Get environment info if available
+    try:
+        from config.environment_manager import EnvironmentManager
+        env_info = EnvironmentManager.get_environment_info()
+        base_url = env_info.get('base_url', 'Unknown')
+    except:
+        base_url = 'Unknown'
+
     return [
+        f"Environment: {environment}",
+        f"Base URL: {base_url}",
         f"Headless Mode: {headless}",
         f"Test Timeout: {timeout}s",
         f"Framework: Sporty Web Assignment Testing Framework",

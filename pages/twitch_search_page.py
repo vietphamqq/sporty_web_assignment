@@ -10,6 +10,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from core.base.base_page import BasePage
 from core.exceptions.framework_exceptions import ElementNotFoundException
+from config.constants import TimeoutConstants
 
 
 class TwitchSearchPage(BasePage):
@@ -42,7 +43,7 @@ class TwitchSearchPage(BasePage):
                     (By.CSS_SELECTOR, "input[type=search]"),
                     (By.CSS_SELECTOR, "input[placeholder*='Search']"),
                 ],
-                timeout=5,
+                timeout=TimeoutConstants.QUICK_WAIT,
             )
 
             # Clear and input search term

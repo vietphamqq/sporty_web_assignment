@@ -38,7 +38,12 @@ sporty_web_assignment/
 │   ├── twitch_search_page.py     # Twitch search page
 │   └── twitch_streamer_page.py   # Twitch streamer page
 ├── config/
-│   └── settings.py               # Framework configuration
+│   ├── constants.py              # Centralized framework constants
+│   ├── environment_manager.py    # Environment management logic
+│   ├── environments/
+│   │   ├── base.py              # Base environment configuration
+│   │   └── production.py        # Production environment settings
+│   └── settings.py              # Main framework configuration
 ├── tests/                        # Test suites
 │   └── test_twitch.py            # Twitch end-to-end test
 ├── utils/                        # Utility functions
@@ -113,7 +118,7 @@ allure --version
 ### Basic Test Execution
 
 ```bash
-# Run all tests (iPhone SE emulation)
+# Run all tests (iPhone SE emulation, production environment)
 python -m pytest tests/
 
 # Run with verbose output
@@ -121,6 +126,58 @@ python -m pytest tests/ -v
 
 # Run in headless mode
 python -m pytest tests/ --headless
+
+# Run against production environment (default)
+python -m pytest tests/ --env production
+```
+
+### Command Line Options
+
+The framework provides comprehensive CLI options for flexible test execution:
+
+#### **Environment Options**
+```bash
+--env ENV                    # Environment to run tests against
+                             # Choices: production, prod (default: production)
+```
+
+#### **Browser Options**
+```bash
+--headless                   # Run tests in headless mode (default: false)
+```
+
+#### **Timing Options**
+```bash
+--test-timeout TIMEOUT       # Test timeout in seconds (default: 30)
+```
+
+#### **Reporting Options**
+```bash
+--html-report                # Enable HTML report generation
+--allure-report              # Enable Allure report generation
+--open-allure                # Automatically open Allure report in browser
+                             # (requires --allure-report and Allure CLI)
+--screenshot-on-failure      # Take screenshot on test failure (default: true)
+```
+
+#### **Advanced Usage Examples**
+
+```bash
+# Complete test run with all options
+python -m pytest tests/ \
+  --env production \
+  --headless \
+  --test-timeout 60 \
+  --html-report \
+  --allure-report \
+  --open-allure \
+  --screenshot-on-failure
+
+# Minimal test run
+python -m pytest tests/ --headless
+
+# Debug mode with verbose output
+python -m pytest tests/ -v -s --test-timeout 120
 ```
 
 ### With Reporting
@@ -137,6 +194,9 @@ python -m pytest tests/ --html-report --allure-report --open-allure
 
 # Complete test run with all features
 python -m pytest tests/ --headless --html-report --allure-report --open-allure -v
+
+# Production environment with all features
+python -m pytest tests/ --env production --headless --allure-report --open-allure
 ```
 
 ### Advanced Options
@@ -202,15 +262,6 @@ class DriverManager:
         # Automatically detects worker and provides isolated driver
 ```
 
-### Performance Comparison
-
-| Execution Mode | Time (1 test) | Time (4 tests) | Efficiency |
-|----------------|---------------|----------------|------------|
-| **Sequential** | 9.6s | ~38.4s | 1x |
-| **Parallel (n=2)** | 9.6s | ~19.2s | 2x |
-| **Parallel (n=4)** | 9.6s | ~9.6s | 4x |
-| **Parallel (n=auto)** | 9.6s | ~9.6s | N-core scaling |
-
 ### Environment Variables for Parallel Execution
 
 ```bash
@@ -267,6 +318,109 @@ Test reports are automatically deployed to: `https://vietphamqq.github.io/sporty
 - **📁 Artifacts**: Download reports, screenshots, logs from Actions
 - **🌐 Live Allure Reports**: GitHub Pages URL (if configured)
 - **📱 Status Badges**: README badges show current build status
+
+## 🌍 Environment Configuration
+
+### Environment Configuration System
+
+The framework features a comprehensive **environment management system** that supports multiple environments with inheritance and flexible configuration:
+
+#### **Supported Environments**
+- **Production**: Live Twitch production environment (default)
+- **Base URL**: https://m.twitch.tv
+- **Mobile Testing**: iPhone SE emulation for responsive testing
+
+#### **Environment Manager Architecture**
+
+The framework uses an **Environment Manager** pattern with:
+- **Base Environment Class**: Abstract base for all environments
+- **Environment-Specific Configurations**: Production, staging, development
+- **Centralized Management**: Single point of control for environment switching
+- **Automatic URL Resolution**: Environment-based URL generation
+
+#### **Usage Examples**
+
+```bash
+# Production environment (default)
+python -m pytest tests/ --env production
+
+# Production with alias
+python -m pytest tests/ --env prod
+
+# Production with all features
+python -m pytest tests/ --env production --headless --allure-report --open-allure
+```
+
+#### **Environment Configuration Structure**
+
+```
+config/
+├── constants.py              # Centralized constants for all environments
+├── environments/
+│   ├── base.py              # Abstract base environment configuration
+│   └── production.py        # Production-specific settings
+├── environment_manager.py    # Environment management and switching logic
+└── settings.py              # Main configuration with environment integration
+```
+
+#### **Production Environment Features**
+
+- **Base URL**: https://m.twitch.tv
+- **Explicit Wait**: 20 seconds
+- **Page Load Timeout**: 30 seconds
+- **Test Data Source**: Local
+- **Mobile Emulation**: iPhone SE
+- **Screenshot on Failure**: Enabled
+
+#### **Environment Variables**
+
+The production environment automatically sets these variables:
+
+```python
+# Production Environment Configuration
+{
+    "ENV": "production",
+    "BASE_URL": "https://m.twitch.tv",
+    "EXPLICIT_WAIT": "20",
+    "PAGE_LOAD_TIMEOUT": "30",
+    "SCREENSHOT_ON_FAILURE": "true",
+    "TEST_DATA_SOURCE": "local"
+}
+```
+
+#### **Adding New Environments**
+
+To add a new environment (e.g., staging):
+
+1. **Create Environment Class**:
+```python
+# config/environments/staging.py
+from .base import BaseEnvironmentConfig
+
+class StagingConfig(BaseEnvironmentConfig):
+    def __init__(self):
+        super().__init__(
+            name="staging",
+            description="Staging environment for testing",
+            base_url="https://staging.twitch.tv",
+            explicit_wait=15,  # Different timeout for staging
+        )
+```
+
+2. **Register Environment**:
+```python
+# config/environment_manager.py
+_environments: Dict[str, Type[BaseEnvironmentConfig]] = {
+    "production": ProductionConfig,
+    "staging": StagingConfig,  # Add new environment
+    "prod": ProductionConfig,  # Alias
+}
+```
+
+3. **Use New Environment**:
+```bash
+python -m pytest tests/ --env staging
+```
 
 ## 📱 Mobile Testing
 
@@ -334,6 +488,9 @@ Each exception provides:
 ### Environment Variables
 
 ```bash
+# Environment Configuration
+ENV=production                   # Environment to use
+
 # Browser Configuration
 BROWSER=chrome                    # Browser type (default: chrome)
 HEADLESS=true                    # Headless mode (default: false)
@@ -384,16 +541,37 @@ This assignment demonstrates several key software engineering patterns:
 - **Reusability**: Page objects designed for cross-test reuse
 - **Readability**: Tests written in natural, readable language
 
-#### **Factory Pattern**
-- **Driver Management**: Showcases centralized WebDriver creation and management
-- **Configuration**: Demonstrates consistent setup across environments
-- **Resource Management**: Implements proper cleanup and lifecycle management
-- **Extensibility**: Architecture allows easy addition of new browser types
+#### **Abstract Factory Pattern**
+- **Multi-Browser Support**: Extensible architecture for different browser types
+- **Driver Management**: Thread-safe WebDriver creation and management
+- **Configuration**: Consistent setup across environments and browsers
+- **Resource Management**: Proper cleanup and lifecycle management
+- **Future Extensibility**: Easy addition of Firefox, Safari, Edge support
 
 #### **Template Method Pattern**
 - **Test Lifecycle**: Demonstrates consistent setup/teardown methodology
 - **Customization**: Shows how subclasses can override specific behaviors
 - **Code Reuse**: Implements common functionality in base classes
+
+### Multi-Browser Architecture
+
+The framework uses an **Abstract Factory Pattern** for browser extensibility:
+
+```python
+# Current implementation (Chrome only for assignment)
+driver = DriverManager.get_mobile_driver()  # Returns Chrome by default
+
+# Future multi-browser support (ready for extension)
+chrome_driver = DriverManager.get_mobile_driver(browser=BrowserType.CHROME)
+firefox_driver = DriverManager.get_mobile_driver(browser=BrowserType.FIREFOX)  # Future
+safari_driver = DriverManager.get_mobile_driver(browser=BrowserType.SAFARI)    # Future
+```
+
+**Benefits:**
+- **Zero Breaking Changes**: Current tests work unchanged
+- **Clean Extension**: Add new browsers without modifying existing code  
+- **Thread-Safe**: Maintains parallel execution capabilities
+- **Configuration-Driven**: Browser selection through environment variables
 
 
 ## 📚 Examples
@@ -402,47 +580,255 @@ This assignment demonstrates several key software engineering patterns:
 
 ```python
 from core.base.test_base import TestBase
-from core.mobile_driver_manager import DriverManager
+from core.driver_manager import DriverManager
+from core.exceptions.framework_exceptions import DriverException
 from pages.twitch_home_page import TwitchHomePage
+from config.constants import TimeoutConstants
+
 
 class TestExample(TestBase):
+    """Basic test example using the framework"""
+
     def _setup_test_data(self):
+        """Setup test data"""
         self.search_term = "Starcraft II"
-    
+        self.expected_url = "twitch.tv"
+
     def _setup_test_environment(self):
-        self.driver = DriverManager.get_mobile_driver()
-        self.home_page = TwitchHomePage(self.driver)
-    
+        """Setup WebDriver and page objects using DriverManager"""
+        try:
+            # Get thread-safe mobile driver instance
+            self.driver = DriverManager.get_mobile_driver()
+
+            # Initialize page objects
+            self.home_page = TwitchHomePage(self.driver)
+
+        except DriverException as e:
+            self.logger.error(f"Failed to setup test environment: {e}")
+            raise
+
     def _cleanup_test_environment(self):
+        """Cleanup WebDriver instance"""
+        # DriverManager handles thread-safe cleanup
         DriverManager.quit_driver()
-    
+
     def test_homepage_navigation(self):
+        """Test: Verify homepage navigation works correctly"""
+        self.log_test_step("Starting homepage navigation test")
+
+        # Navigate to home page using environment-configured URL
         self.home_page.navigate_to_home()
-        assert "twitch.tv" in self.driver.current_url
+
+        # Verify navigation
+        current_url = self.driver.current_url
+        assert self.expected_url in current_url, \
+            f"Expected '{self.expected_url}' in URL, got: {current_url}"
+
+        # Verify page loaded correctly
+        page_loaded = self.home_page.is_page_loaded_correctly()
+        assert page_loaded, "Home page did not load correctly"
+
+        self.log_test_step("Homepage navigation test completed successfully")
 ```
 
-### Custom Page Object Example
+### Page Object with Environment Integration
 
 ```python
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
+
 from core.base.base_page import BasePage
 from core.exceptions.framework_exceptions import ElementNotFoundException
+from config.constants import TimeoutConstants, URLConstants
+
 
 class CustomPage(BasePage):
-    # Locators with fallbacks
+    """Custom page object with environment-aware URL configuration"""
+
+    # Robust locators with multiple strategies
     SEARCH_BUTTON = [
         ("css", "[data-test-selector='search-button']"),
         ("xpath", "//button[contains(text(), 'Search')]"),
         ("id", "search-btn")
     ]
-    
-    def click_search_button(self):
+
+    SEARCH_INPUT = [
+        ("css", "input[type='search']"),
+        ("xpath", "//input[@type='search']"),
+        ("name", "search")
+    ]
+
+    def __init__(self, driver: WebDriver):
+        super().__init__(driver)
+        # Get URL from environment configuration
+        from config.settings import Settings
+        self.url = Settings.get_test_url(URLConstants.SEARCH_URL_KEY)
+
+    def navigate_to_page(self) -> None:
+        """Navigate to page using environment-configured URL"""
+        self.navigate_to(self.url)
+        self.wait_for_page_load()
+
+    def perform_search(self, search_term: str) -> bool:
+        """Perform search with robust error handling"""
         try:
-            element = self.find_element(self.SEARCH_BUTTON)
-            element.click()
+            self.log_test_step(f"Searching for: {search_term}")
+
+            # Enter search term
+            search_input_success = self.enter_text(
+                self.SEARCH_INPUT,
+                search_term,
+                timeout=TimeoutConstants.EXPLICIT_WAIT
+            )
+
+            if not search_input_success:
+                self.logger.error("Failed to enter search term")
+                return False
+
+            # Click search button with fallback to Enter key
+            button_clicked = self.click_element(
+                self.SEARCH_BUTTON,
+                timeout=TimeoutConstants.EXPLICIT_WAIT
+            )
+
+            if not button_clicked:
+                # Fallback: press Enter key
+                from selenium.webdriver.common.keys import Keys
+                self.send_keys_to_element(
+                    self.SEARCH_INPUT,
+                    Keys.RETURN,
+                    timeout=TimeoutConstants.QUICK_WAIT
+                )
+
             return True
-        except ElementNotFoundException:
-            self.logger.error("Search button not found")
+
+        except ElementNotFoundException as e:
+            self.logger.error(f"Search failed: {e}")
             return False
+
+    def is_page_loaded_correctly(self) -> bool:
+        """Verify page loaded correctly"""
+        try:
+            return (
+                self.is_element_present(self.SEARCH_INPUT, timeout=TimeoutConstants.QUICK_WAIT) and
+                self.is_element_present(self.SEARCH_BUTTON, timeout=TimeoutConstants.QUICK_WAIT)
+            )
+        except Exception:
+            return False
+```
+
+### Environment-Aware Test Example
+
+```python
+from core.base.test_base import TestBase
+from core.driver_manager import DriverManager
+from core.exceptions.framework_exceptions import DriverException
+from pages.twitch_home_page import TwitchHomePage
+from config.constants import TimeoutConstants
+
+
+class TestEnvironmentAware(TestBase):
+    """Test example demonstrating environment configuration usage"""
+
+    def _setup_test_data(self):
+        """Setup test data"""
+        # Get environment-specific configuration
+        from config.settings import Settings
+        env_info = Settings.get_environment_info()
+
+        self.base_url = env_info['base_url']
+        self.explicit_wait = int(env_info['explicit_wait'])
+        self.test_search_term = "gaming"
+
+    def _setup_test_environment(self):
+        """Setup with environment-aware configuration"""
+        try:
+            # DriverManager automatically uses environment settings
+            self.driver = DriverManager.get_mobile_driver()
+            self.home_page = TwitchHomePage(self.driver)
+
+        except DriverException as e:
+            self.logger.error(f"Environment setup failed: {e}")
+            raise
+
+    def _cleanup_test_environment(self):
+        """Cleanup"""
+        DriverManager.quit_driver()
+
+    def test_environment_integration(self):
+        """Test: Verify environment configuration is properly integrated"""
+        self.log_test_step("Testing environment integration")
+
+        # Navigate using environment URL
+        self.home_page.navigate_to_home()
+
+        # Verify environment URL is used
+        current_url = self.driver.current_url
+        assert self.base_url in current_url, \
+            f"Expected environment URL '{self.base_url}' in current URL: {current_url}"
+
+        # Test respects environment timeouts
+        # (The framework automatically uses environment-specific timeouts)
+        page_loaded = self.home_page.is_page_loaded_correctly()
+        assert page_loaded, "Page should load within environment timeout"
+
+        self.log_test_step("Environment integration test passed")
+```
+
+## 🧪 Creating New Tests
+
+### Basic Test Structure
+
+Create test files in the `tests/` directory following this pattern:
+
+```python
+# tests/test_example.py
+"""
+Example Test - Template for new test classes
+"""
+
+from core.base.test_base import TestBase
+from core.driver_manager import DriverManager
+from core.exceptions.framework_exceptions import DriverException
+from pages.twitch_home_page import TwitchHomePage
+
+
+class TestExample(TestBase):
+    """Test class for Example page functionality"""
+
+    def _setup_test_data(self):
+        """Setup test data for the example test"""
+        self.search_term = "Starcraft II"
+
+    def _setup_test_environment(self):
+        """Setup WebDriver and page objects"""
+        try:
+            # Setup WebDriver using DriverManager
+            self.driver = DriverManager.get_mobile_driver()
+
+            # Initialize page objects
+            self.home_page = TwitchHomePage(self.driver)
+
+        except DriverException as e:
+            self.logger.error(f"Failed to setup test environment: {e}")
+            raise
+
+    def _cleanup_test_environment(self):
+        """Cleanup WebDriver instance"""
+        DriverManager.quit_driver()
+
+    def test_homepage_navigation(self):
+        """Test: Verify homepage navigation works correctly"""
+        self.log_test_step("Starting homepage navigation test")
+
+        # Navigate to home page
+        self.home_page.navigate_to_home()
+
+        # Verify we're on the correct page
+        current_url = self.driver.current_url
+        assert "twitch.tv" in current_url, f"Expected twitch.tv in URL, got: {current_url}"
+
+        self.log_test_step("Homepage navigation test completed successfully")
 ```
 
 ## 🆘 Troubleshooting

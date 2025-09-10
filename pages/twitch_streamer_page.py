@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from core.base.base_page import BasePage
+from config.constants import TimeoutConstants
 
 
 class TwitchStreamerPage(BasePage):
@@ -25,14 +26,14 @@ class TwitchStreamerPage(BasePage):
         try:
             # Use flexible locators to check for streamer page elements
             return (
-                self.is_element_present(self.FOLLOW_BUTTON, timeout=5)
-                and self.is_element_present(self.ABOUT_MENU, timeout=5)
-                and self.is_element_present(self.VIDEOS, timeout=5)
+                self.is_element_present(self.FOLLOW_BUTTON, timeout=TimeoutConstants.QUICK_WAIT)
+                and self.is_element_present(self.ABOUT_MENU, timeout=TimeoutConstants.QUICK_WAIT)
+                and self.is_element_present(self.VIDEOS, timeout=TimeoutConstants.QUICK_WAIT)
             )
         except:
             return False
 
-    def wait_for_streamer_page_load(self, timeout: int = 15) -> bool:
+    def wait_for_streamer_page_load(self) -> bool:
         """Wait for stream content to load completely"""
         try:
             # Wait for page to load

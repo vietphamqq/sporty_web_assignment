@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from config.settings import Settings
+from config.constants import ReportConstants, FrameworkConstants
 
 
 class HTMLReporter:
@@ -15,7 +16,7 @@ class HTMLReporter:
 
     def __init__(self):
         self.report_dir = Settings.REPORT.report_dir
-        self.html_dir = os.path.join(self.report_dir, "html")
+        self.html_dir = os.path.join(self.report_dir, ReportConstants.HTML_REPORT_DIR)
         self.test_results = []
         self.start_time = None
         self.end_time = None
@@ -96,7 +97,7 @@ class HTMLReporter:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sporty Web Assignment Test Report</title>
+    <title>{FrameworkConstants.FRAMEWORK_NAME} Test Report</title>
     <style>
         {self._get_css_styles()}
     </style>
@@ -104,7 +105,7 @@ class HTMLReporter:
 <body>
     <div class="container">
         <header>
-            <h1>Sporty Web Assignment Testing Framework</h1>
+            <h1>{FrameworkConstants.FRAMEWORK_NAME}</h1>
             <h2>Test Execution Report</h2>
         </header>
         

@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import Settings
+from config.constants import TimeoutConstants, ReportConstants
 from core.exceptions.framework_exceptions import (ElementNotFoundException,
                                                   PageNotFoundException)
 from core.exceptions.framework_exceptions import \
@@ -487,7 +488,7 @@ class BasePage:
         # Ensure screenshots directory exists
         import os
 
-        screenshot_dir = os.path.join(Settings.REPORT.report_dir, "screenshots")
+        screenshot_dir = os.path.join(Settings.REPORT.report_dir, ReportConstants.SCREENSHOTS_DIR)
         os.makedirs(screenshot_dir, exist_ok=True)
 
         filepath = os.path.join(screenshot_dir, filename)
