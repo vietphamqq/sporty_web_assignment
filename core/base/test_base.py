@@ -3,7 +3,6 @@ Base test class for all test types
 """
 
 from datetime import datetime
-from re import S
 from typing import Optional, Dict
 
 from utils.loggers.logger import Logger

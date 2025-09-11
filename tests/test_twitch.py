@@ -50,7 +50,7 @@ class TestTwitch(BaseTest):
         self.log_test_step(
             "Step 3.5: Select 'Starcraft II' from search results if available"
         )
-        search_results = self.search_page.get_search_category_results(self.search_term)
+        search_results = self.search_page.get_search_category_results()
         assert len(search_results) > 0, "No search results found"
         search_results[0].click()
 

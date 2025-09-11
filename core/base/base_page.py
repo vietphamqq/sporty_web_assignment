@@ -7,7 +7,6 @@ from typing import Any, List, Optional, Tuple, Union
 
 from selenium.common.exceptions import (NoSuchElementException,
                                         TimeoutException, WebDriverException)
-from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -16,8 +15,7 @@ from config.settings import Settings
 from config.constants import ReportConstants
 from core.exceptions.framework_exceptions import (ElementNotFoundException,
                                                   PageNotFoundException)
-from core.exceptions.framework_exceptions import \
-    TimeoutException as SportyTimeoutException
+from utils.loggers.logger import Logger
 
 
 class BasePage:
@@ -26,6 +24,7 @@ class BasePage:
     def __init__(self, driver=None):
         self.driver = driver
         self.wait = WebDriverWait(self.driver, Settings.BROWSER.explicit_wait)
+        self.logger = Logger.get_logger(self.__class__.__name__)
 
     def navigate_to(self, url: str) -> None:
         """Navigate to a specific URL
@@ -413,7 +412,6 @@ class BasePage:
                 }});
             """
         )
-        time.sleep(2)  # Allow time for content to load
 
     def is_element_within_viewport(self, element: WebElement) -> bool:
         """Check if element is within viewport"""
@@ -495,7 +493,7 @@ class BasePage:
             self.driver.save_screenshot(filepath)
             return filepath
         except Exception as e:
-            print(f"Failed to take screenshot: {e}")
+            self.logger.error(f"Failed to take screenshot: {e}")
             return None
 
     def execute_javascript(self, script: str, *args) -> Any:
@@ -539,3 +537,67 @@ class BasePage:
             return True
         except TimeoutException:
             return False
+
+    def wait_for_network_idle(self, timeout: int = 7, idle_time: float = 1.5) -> bool:
+        """Wait for network activity to become idle (no new requests)
+
+        This method waits for network requests to stop, which is much more efficient
+        than continuously polling for specific data. Requires selenium-wire for network monitoring.
+
+        Args:
+            timeout: Maximum time to wait for network to become idle
+            idle_time: How long the network must be idle before considering it settled
+
+        Returns:
+            bool: True if network became idle, False if timeout occurred
+
+        Example:
+            # Wait for API requests to complete before proceeding
+            if self.wait_for_network_idle(timeout=10, idle_time=2.0):
+                # Now process the results or continue with test
+                self.process_search_results()
+        """
+        def log(message: str):
+            self.logger.info(f"[Network Idle] {message}")
+
+        start_time = time.time()
+        last_request_count = 0
+        idle_start_time = None
+
+        log(f"Starting network idle monitoring (timeout={timeout}s, idle_time={idle_time}s)")
+
+        while time.time() - start_time < timeout:
+            try:
+                # Get current number of requests
+                current_requests = len(getattr(self.driver, 'requests', []))
+                current_time = time.time()
+                elapsed_time = current_time - start_time
+
+                if current_requests > last_request_count:
+                    # New requests detected, reset idle timer
+                    new_requests = current_requests - last_request_count
+                    log(f"[{elapsed_time:.1f}s] New requests detected: {new_requests} new, total: {current_requests}")
+                    idle_start_time = None
+                elif current_requests == last_request_count:
+                    # No new requests, start or continue idle timer
+                    if idle_start_time is None:
+                        idle_start_time = current_time
+                        log(f"[{elapsed_time:.1f}s] Network became stable, starting idle timer (current requests: {current_requests})")
+                    elif current_time - idle_start_time >= idle_time:
+                        # Network has been idle for the required time
+                        log(f"[{elapsed_time:.1f}s] Network idle for {idle_time}s - considering settled (total requests: {current_requests})")
+                        return True
+                    else:
+                        idle_duration = current_time - idle_start_time
+                        log(f"[{elapsed_time:.1f}s] Network stable for {idle_duration:.1f}s (need {idle_time}s total, requests: {current_requests})")
+
+                last_request_count = current_requests
+                time.sleep(0.5)
+
+            except Exception as e:
+                log(f"Error during network monitoring: {e}")
+                time.sleep(0.5)
+
+        total_time = time.time() - start_time
+        log(f"[{total_time:.1f}s] Network idle monitoring timed out after {timeout}s (final requests: {last_request_count})")
+        return False

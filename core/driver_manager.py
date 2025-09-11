@@ -13,52 +13,45 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
+from seleniumwire import webdriver as wire_webdriver
 from core.exceptions.framework_exceptions import DriverException
 from config.constants import (
     BrowserConstants,
-    TimeoutConstants,
     ChromeOptionsConstants,
 )
 
 
 class BrowserType(Enum):
-    """Supported browser types for future extensibility"""
+    """Supported browser types"""
     CHROME = "chrome"
-    # FIREFOX = "firefox"    # Future support
-    # SAFARI = "safari"      # Future support  
-    # EDGE = "edge"          # Future support
 
 
 class BrowserFactory(ABC):
     """Abstract factory for creating browser-specific WebDriver instances"""
-    
+
     @abstractmethod
-    def create_mobile_driver(self, device: str) -> webdriver.Remote:
-        """Create a mobile WebDriver instance for the specific browser"""
-        pass
-    
-    @abstractmethod
-    def create_desktop_driver(self) -> webdriver.Remote:
-        """Create a desktop WebDriver instance for the specific browser"""
+    def create_mobile_wire_driver(self, device: str):
+        """Create a mobile WebDriver instance with selenium-wire for the specific browser"""
         pass
 
 
 class ChromeDriverFactory(BrowserFactory):
-    """Factory for creating Chrome WebDriver instances"""
+    """Factory for creating Chrome WebDriver instances with selenium-wire"""
+
+    def create_mobile_wire_driver(self, device: str):
+        """Create a Chrome mobile WebDriver instance with selenium-wire for network monitoring"""
+        return self._create_chrome_mobile_driver(device, use_wire=True)
     
-    # Implementation of the abstract method
-    def create_mobile_driver(self, device: str) -> webdriver.Chrome:
-        """Create a Chrome mobile WebDriver instance with device emulation"""
-        return self._create_chrome_mobile_driver(device)
-    
-    # Future implementation
-    def create_desktop_driver(self) -> webdriver.Chrome:
-        """Create a Chrome desktop WebDriver instance"""
-        # Future implementation for desktop Chrome
-        raise NotImplementedError("Desktop Chrome driver not implemented yet")
-    
-    def _create_chrome_mobile_driver(self, device_name: str) -> webdriver.Chrome:
-        """Create Chrome mobile driver with device emulation - existing implementation"""
+    def _create_chrome_mobile_driver(self, device_name: str, use_wire: bool = False) -> webdriver.Chrome:
+        """Create Chrome mobile driver with optional selenium-wire support
+
+        Args:
+            device_name: Name of device to emulate
+            use_wire: Whether to use selenium-wire for network monitoring
+
+        Returns:
+            webdriver.Chrome: Configured Chrome driver instance
+        """
         try:
             chrome_options = ChromeOptions()
 
@@ -73,16 +66,19 @@ class ChromeDriverFactory(BrowserFactory):
             # Add Chrome arguments from constants
             for arg in ChromeOptionsConstants.CHROME_ARGS:
                 chrome_options.add_argument(arg)
-            
+
             for arg in ChromeOptionsConstants.MOBILE_EMULATION_ARGS:
                 chrome_options.add_argument(arg)
 
             # Mobile-specific preferences from constants
             chrome_options.add_experimental_option("prefs", ChromeOptionsConstants.CHROME_PREFS)
 
-            # Create driver with Chrome mobile emulation
+            # Create driver with or without selenium-wire
             service = ChromeService(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=chrome_options)
+            if use_wire:
+                driver = wire_webdriver.Chrome(service=service, options=chrome_options)
+            else:
+                driver = webdriver.Chrome(service=service, options=chrome_options)
 
             # Configure timeouts for mobile from constants
             driver.implicitly_wait(BrowserConstants.CHROME_IMPLICIT_WAIT)
@@ -92,41 +88,15 @@ class ChromeDriverFactory(BrowserFactory):
             return driver
 
         except Exception as e:
+            driver_type = "with selenium-wire" if use_wire else ""
             raise DriverException(
-                f"Failed to create mobile WebDriver for device '{device_name}'",
-                {"device": device_name, "error": str(e)},
+                f"Failed to create mobile WebDriver {driver_type} for device '{device_name}'".strip(),
+                {"device": device_name, "use_wire": use_wire, "error": str(e)},
             )
 
 
-# Future browser factories
-# class FirefoxDriverFactory(BrowserFactory):
-#     """Factory for creating Firefox WebDriver instances"""
-#     
-#     def create_mobile_driver(self, device: str) -> webdriver.Firefox:
-#         """Create Firefox mobile driver with responsive design testing"""
-#         # Future implementation:
-#         # - Use Firefox's responsive design mode
-#         # - Configure user agent for mobile
-#         # - Set viewport dimensions
-#         pass
-#     
-#     def create_desktop_driver(self) -> webdriver.Firefox:
-#         """Create Firefox desktop driver"""
-#         pass
-
-# class SafariDriverFactory(BrowserFactory):
-#     """Factory for creating Safari WebDriver instances"""
-#     
-#     def create_mobile_driver(self, device: str) -> webdriver.Safari:
-#         """Create Safari mobile driver (iOS Simulator)"""
-#         # Future implementation:
-#         # - Integrate with iOS Simulator
-#         # - Configure mobile Safari settings
-#         pass
-#     
-#     def create_desktop_driver(self) -> webdriver.Safari:
-#         """Create Safari desktop driver"""
-#         pass
+# Note: Future browser support (Firefox, Safari, Edge) can be added when needed
+# by extending the BrowserType enum and implementing corresponding factories
 
 
 class DriverManager:
@@ -140,9 +110,6 @@ class DriverManager:
     # Browser factory registry
     _browser_factories = {
         BrowserType.CHROME: ChromeDriverFactory(),
-        # BrowserType.FIREFOX: FirefoxDriverFactory(),  # Future support
-        # BrowserType.SAFARI: SafariDriverFactory(),    # Future support
-        # BrowserType.EDGE: EdgeDriverFactory(),        # Future support
     }
 
     # Default configuration
@@ -150,13 +117,13 @@ class DriverManager:
     _default_device = BrowserConstants.DEFAULT_DEVICE
 
     @classmethod
-    def get_mobile_driver(
-        cls, 
-        worker_id: Optional[str] = None, 
+    def get_mobile_wire_driver(
+        cls,
+        worker_id: Optional[str] = None,
         device: Optional[str] = None,
         browser: BrowserType = None
-    ) -> webdriver.Remote:
-        """Get or create a thread-safe mobile WebDriver instance
+    ):
+        """Get or create a thread-safe mobile WebDriver instance with selenium-wire for network monitoring
 
         Args:
             worker_id: Optional worker ID for parallel execution (auto-detected if None)
@@ -164,12 +131,12 @@ class DriverManager:
             browser: Browser type to use (defaults to Chrome)
 
         Returns:
-            webdriver.Remote: WebDriver instance with mobile emulation
+            WebDriver instance with mobile emulation and network monitoring (selenium-wire Chrome if available, regular Chrome otherwise)
 
         Raises:
             DriverException: If driver creation fails
         """
-        # Use default browser (Chrome) 
+        # Use default browser (Chrome)
         browser_type = browser or cls._default_browser
         device_name = device or cls._default_device
         worker_key = cls._get_worker_key(worker_id)
@@ -182,12 +149,13 @@ class DriverManager:
                     cls._browser_configs[worker_key] = {
                         "browser": browser_type,
                         "device": device_name,
-                        "mobile": True
+                        "mobile": True,
+                        "wire": True
                     }
-                    
+
                     # Create driver using appropriate factory
                     factory = cls._get_browser_factory(browser_type)
-                    cls._drivers[worker_key] = factory.create_mobile_driver(device_name)
+                    cls._drivers[worker_key] = factory.create_mobile_wire_driver(device_name)
 
                 return cls._drivers[worker_key]
 
@@ -195,38 +163,10 @@ class DriverManager:
                 # Clean up failed driver creation
                 cls._cleanup_worker(worker_key)
                 raise DriverException(
-                    f"Failed to create mobile driver for worker '{worker_key}': {str(e)}",
+                    f"Failed to create mobile wire driver for worker '{worker_key}': {str(e)}",
                     {"worker_id": worker_key, "browser": browser_type.value, "device": device_name, "error": str(e)},
                 )
 
-    # Future implementation
-    @classmethod
-    def get_desktop_driver(
-        cls,
-        worker_id: Optional[str] = None,
-        browser: BrowserType = None
-    ) -> webdriver.Remote:
-        """Get or create a thread-safe desktop WebDriver instance
-        
-        Args:
-            worker_id: Optional worker ID for parallel execution (auto-detected if None)
-            browser: Browser type to use (defaults to Chrome)
-            
-        Returns:
-            webdriver.Remote: Desktop WebDriver instance
-            
-        Raises:
-            DriverException: If driver creation fails
-        """
-        # Future implementation 
-        browser_type = browser or cls._default_browser
-        worker_key = cls._get_worker_key(worker_id)
-        
-        # only Chrome mobile is implemented at the moment
-        raise NotImplementedError(
-            f"Desktop {browser_type.value} driver not implemented yet."
-            "Mobile Chrome testing is implemented at the moment."
-        )
 
     @classmethod
     def _get_browser_factory(cls, browser_type: BrowserType) -> BrowserFactory:
@@ -330,45 +270,3 @@ class DriverManager:
         config = cls._browser_configs.get(worker_key, {})
         return config.get("device")
 
-    @classmethod
-    def get_current_browser(cls, worker_id: Optional[str] = None) -> Optional[BrowserType]:
-        """Get the current browser type for a specific worker
-
-        Args:
-            worker_id: Optional worker ID (auto-detected if None)
-
-        Returns:
-            BrowserType: Browser type or None if no driver exists
-        """
-        worker_key = cls._get_worker_key(worker_id)
-        config = cls._browser_configs.get(worker_key, {})
-        return config.get("browser")
-
-    @classmethod
-    def get_active_workers(cls) -> Dict[str, Dict]:
-        """Get all active workers and their configurations
-
-        Returns:
-            Dict[str, Dict]: Mapping of worker_key to worker configuration
-        """
-        with cls._lock:
-            return cls._browser_configs.copy()
-
-    @classmethod
-    def add_browser_support(cls, browser_type: BrowserType, factory: BrowserFactory) -> None:
-        """Add support for a new browser type (future extensibility)
-        
-        Args:
-            browser_type: Type of browser to add support for
-            factory: Factory instance for creating the browser drivers
-        """
-        cls._browser_factories[browser_type] = factory
-
-    @classmethod
-    def get_supported_browsers(cls) -> List[str]:
-        """Get list of currently supported browser types
-        
-        Returns:
-            List[str]: List of supported browser names
-        """
-        return [browser.value for browser in cls._browser_factories.keys()]

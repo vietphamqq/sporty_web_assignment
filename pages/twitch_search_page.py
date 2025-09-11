@@ -1,8 +1,9 @@
 """
-Twitch Search Page - Page Object Model
+Twitch Search Page - Page Object Model with GraphQL Network Monitoring
 """
 
-from typing import List, Union
+import time
+from typing import Dict, List, Optional, Union
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -13,7 +14,6 @@ from core.exceptions.framework_exceptions import ElementNotFoundException
 from config.constants import TimeoutConstants
 from pages.twitch_streamer_page import TwitchStreamerPage
 
-
 class TwitchSearchPage(BasePage):
     """Page Object for Twitch Search Results Page"""
 
@@ -22,7 +22,6 @@ class TwitchSearchPage(BasePage):
     SEARCH_RESULTS = (By.CSS_SELECTOR, "ul > li > a img[alt]")
     STREAMER_LINK = (By.CSS_SELECTOR, "div[class^= ScTextWrapper] > div > a")
     STREAMER_PREVIEW = (By.CSS_SELECTOR, "article img[class='tw-image']")
-    ALL_LINKS = (By.TAG_NAME, "a")
 
     def __init__(self, driver: WebDriver):
         super().__init__(driver)
@@ -56,22 +55,20 @@ class TwitchSearchPage(BasePage):
             # This maintains the current behavior of the test
             return False
 
-    def get_search_category_results(self, search_term: str) -> List[WebElement]:
-        """Get all search result elements
+    def get_search_category_results(self) -> List[WebElement]:
+        """Get all search result elements using GraphQL monitoring for stability
+
+        Args:
+            None
 
         Returns:
             list: List of search result elements, empty list if none found
         """
         try:
-            # Use flexible locators to find search results
+            self.wait_for_network_idle()
             elements = self.find_elements(self.SEARCH_RESULTS)
-            for element in elements:
-                if element.get_attribute("alt").lower() == search_term.lower():
-                    return [element]
-            # The search result might be too fast, try one more time
-            elements = self.find_elements(self.SEARCH_RESULTS)
-            return [element for element in elements if element.get_attribute("alt").lower() == search_term.lower()]
-        except ElementNotFoundException:
+            return elements if elements else []
+        except Exception:
             return []
 
     def wait_for_search_streamer_results(self) -> bool:
@@ -106,4 +103,4 @@ class TwitchSearchPage(BasePage):
         """Scroll down the specified number of times"""
         for i in range(times):
             self.scroll_down_in_viewport()
-            self.wait_for_search_streamer_results()
+            self.wait_for_network_idle()

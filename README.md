@@ -10,6 +10,7 @@ A demonstration of modern web automation testing capabilities built as part of a
 
 - **🚀 Parallel Test Execution**: Showcases multi-threaded test running with worker isolation
 - **📱 Mobile Testing**: Implements Chrome mobile emulation for responsive testing
+- **🌐 Network Monitoring**: Advanced selenium-wire integration for GraphQL API monitoring
 - **🏗️ Clean Architecture**: Demonstrates Page Object Model (POM) and design patterns
 - **🛡️ Error Handling**: Custom exception framework with 8 specialized exception types
 - **📊 Test Reporting**: Allure reports with visual outputs and screenshots
@@ -18,6 +19,7 @@ A demonstration of modern web automation testing capabilities built as part of a
 - **🧪 Cross-Environment Support**: Headless and GUI modes for different environments
 - **📝 Structured Logging**: Comprehensive logging with test step tracking
 - **🔧 Configuration Management**: Flexible CLI options and environment-based settings
+- **⚠️ Warning Suppression**: Multi-layer warning filtering for clean test output
 
 ## 📁 Project Structure
 
@@ -29,34 +31,44 @@ sporty_web_assignment/
 ├── core/
 │   ├── base/
 │   │   ├── base_page.py          # Base page class with flexible locators
-│   │   └── test_base.py          # Base test class with lifecycle management
+│   │   ├── test_base.py          # Base test class with lifecycle management
+│   │   └── __init__.py
 │   ├── exceptions/
-│   │   └── framework_exceptions.py # Custom exception classes
-│   └── driver_manager.py         # Thread-safe WebDriver factory
+│   │   ├── framework_exceptions.py # Custom exception classes
+│   │   └── __init__.py
+│   ├── driver_manager.py         # Thread-safe WebDriver factory with selenium-wire
+│   └── __init__.py
 ├── pages/                        # Page Object Model classes
 │   ├── twitch_home_page.py       # Twitch home page
-│   ├── twitch_search_page.py     # Twitch search page
-│   └── twitch_streamer_page.py   # Twitch streamer page
+│   ├── twitch_search_page.py     # Twitch search page with network monitoring
+│   ├── twitch_streamer_page.py   # Twitch streamer page
+│   └── __init__.py
 ├── config/
 │   ├── constants.py              # Centralized framework constants
 │   ├── environment_manager.py    # Environment management logic
 │   ├── environments/
 │   │   ├── base.py              # Base environment configuration
-│   │   └── production.py        # Production environment settings
-│   └── settings.py              # Main framework configuration
+│   │   ├── production.py        # Production environment settings
+│   │   └── __init__.py
+│   ├── settings.py              # Main framework configuration
+│   └── __init__.py
 ├── tests/                        # Test suites
-│   └── test_twitch.py            # Twitch end-to-end test
+│   ├── test_twitch.py            # Twitch end-to-end test with GraphQL monitoring
+│   └── __init__.py
 ├── utils/                        # Utility functions
 │   ├── loggers/
-│   │   └── logger.py             # Logging configuration
+│   │   ├── logger.py             # Logging configuration
+│   │   └── __init__.py
 │   └── reporters/
 │       ├── allure_reporter.py    # Allure reporting utilities
+│       └── __init__.py
 ├── reports/                      # Test reports and artifacts
 │   ├── allure/                   # Allure reports
 │   ├── logs/                     # Test logs
 │   └── screenshots/              # Test screenshots
 ├── conftest.py                   # Pytest configuration and CLI options
-├── requirements.txt              # Python dependencies
+├── requirements.txt              # Python dependencies with selenium-wire
+├── pytest.ini                    # Pytest configuration with warning suppression
 └── README.md                     # This file
 ```
 
@@ -64,7 +76,7 @@ sporty_web_assignment/
 
 ### Prerequisites
 
-- **Python 3.8 or higher**
+- **Python 3.9** (recommended, 3.8+ supported)
 - **Chrome browser** (automatically managed in CI/CD)
 - **Git** (for repository operations)
 
@@ -90,6 +102,7 @@ sporty_web_assignment/
 4. **Verify installation**
    ```bash
    python -m pytest --version
+   python -c "import selenium; import seleniumwire; print('Selenium packages imported successfully')"
    ```
 
 ### Optional: Allure CLI (for local report viewing)
@@ -132,19 +145,34 @@ python -m pytest tests/ --env production
 ### Command Line Options
 
 ```bash
-# Basic test execution
+# Basic test execution (with selenium-wire network monitoring)
+python -m pytest tests/
+
+# Headless mode for CI/CD environments
 python -m pytest tests/ --headless
 
 # With Allure reporting
 python -m pytest tests/ --headless --allure-report --open-allure
 
 # Available options:
---env ENV                    # Environment (production, prod)
---headless                   # Run in headless mode
---test-timeout TIMEOUT       # Test timeout in seconds
---allure-report              # Enable Allure report generation
---open-allure                # Auto-open Allure report
---screenshot-on-failure      # Take screenshot on failure
+--env ENV                    # Environment (production, prod) - default: production
+--headless                   # Run in headless mode - default: false
+--test-timeout TIMEOUT       # Test timeout in seconds - default: 30
+--allure-report              # Enable Allure report generation - default: false
+--open-allure                # Auto-open Allure report (requires --allure-report) - default: false
+--screenshot-on-failure      # Take screenshot on failure - default: true
+```
+
+### Warning Suppression
+
+The framework includes comprehensive warning suppression to provide clean test output:
+
+```bash
+# Warnings are automatically suppressed via pytest.ini and conftest.py
+# No additional configuration needed - warnings are filtered at multiple levels:
+# 1. pytest.ini: Global warning filters for urllib3 and deprecation warnings
+# 2. conftest.py: Module-level selenium-wire warning suppression
+# 3. driver_manager.py: Import-time warning filters before selenium-wire import
 ```
 
 ## 🚀 Parallel Execution
@@ -355,7 +383,8 @@ allure serve reports/allure/results
 
 ## 🙏 Technologies & Tools Utilized
 
-- **Selenium WebDriver**: Core automation engine for browser interactions
+- **Selenium WebDriver 4.8+**: Core automation engine for browser interactions
+- **Selenium-Wire 5.1+**: Advanced network monitoring and GraphQL API interception
 - **Pytest Framework**: Testing framework with excellent plugin ecosystem
 - **Allure Reporting**: Professional test reporting and visualization
 - **GitHub Actions**: CI/CD pipeline automation and deployment

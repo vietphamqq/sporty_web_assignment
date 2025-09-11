@@ -16,7 +16,6 @@ from pathlib import Path
 
 import pytest
 
-
 def pytest_addoption(parser):
     """Add custom command line options to pytest"""
 
@@ -123,16 +122,16 @@ def parallel_session_setup(request):
 
 @pytest.fixture(scope="function")
 def driver():
-    """Provides a WebDriver instance for each test
+    """Provides a WebDriver instance with selenium-wire for network monitoring
 
     This fixture ensures complete test isolation in parallel execution
-    and handles automatic cleanup.
+    and handles automatic cleanup. Uses selenium-wire for GraphQL request monitoring.
     """
     from core.driver_manager import DriverManager
 
-    # Get worker-specific driver
-    driver = DriverManager.get_mobile_driver()
-    print("\n🧪 New WebDriver instance created for test")
+    # Get worker-specific driver with selenium-wire support for GraphQL monitoring
+    driver = DriverManager.get_mobile_wire_driver()
+    print("\n🧪 New WebDriver instance created for test (with selenium-wire for GraphQL monitoring)")
 
     yield driver
 
