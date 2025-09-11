@@ -46,10 +46,12 @@ class BrowserFactory(ABC):
 class ChromeDriverFactory(BrowserFactory):
     """Factory for creating Chrome WebDriver instances"""
     
+    # Implementation of the abstract method
     def create_mobile_driver(self, device: str) -> webdriver.Chrome:
         """Create a Chrome mobile WebDriver instance with device emulation"""
         return self._create_chrome_mobile_driver(device)
     
+    # Future implementation
     def create_desktop_driver(self) -> webdriver.Chrome:
         """Create a Chrome desktop WebDriver instance"""
         # Future implementation for desktop Chrome
@@ -197,6 +199,7 @@ class DriverManager:
                     {"worker_id": worker_key, "browser": browser_type.value, "device": device_name, "error": str(e)},
                 )
 
+    # Future implementation
     @classmethod
     def get_desktop_driver(
         cls,
@@ -215,14 +218,14 @@ class DriverManager:
         Raises:
             DriverException: If driver creation fails
         """
-        # Future implementation - placeholder for assignment
+        # Future implementation 
         browser_type = browser or cls._default_browser
         worker_key = cls._get_worker_key(worker_id)
         
-        # For assignment: only Chrome mobile is implemented
+        # only Chrome mobile is implemented at the moment
         raise NotImplementedError(
-            f"Desktop {browser_type.value} driver not implemented yet. "
-            "Assignment focuses on mobile Chrome testing."
+            f"Desktop {browser_type.value} driver not implemented yet."
+            "Mobile Chrome testing is implemented at the moment."
         )
 
     @classmethod
@@ -268,12 +271,10 @@ class DriverManager:
 
         # Check if running under pytest-xdist
         try:
-            import os
-
             if "PYTEST_XDIST_WORKER" in os.environ:
                 return f"xdist_{os.environ['PYTEST_XDIST_WORKER']}"
-        except:
-            pass
+        except Exception as e:
+            print(f"Warning: Error getting worker key: {e}")
 
         return f"thread_{thread_id}"
 

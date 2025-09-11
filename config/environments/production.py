@@ -17,7 +17,7 @@ class ProductionConfig(BaseEnvironmentConfig):
     def __init__(self):
         super().__init__(
             name="production",
-            description="Production Twitch environment for assignment testing",
+            description="Production Twitch environment",
             base_url=URLConstants.PRODUCTION_BASE_URL,
             explicit_wait=TimeoutConstants.EXPLICIT_WAIT,
             page_load_timeout=TimeoutConstants.PAGE_LOAD_TIMEOUT,
@@ -31,8 +31,6 @@ class ProductionConfig(BaseEnvironmentConfig):
         return {
             URLConstants.HOME_URL_KEY: f"{self.base_url}/",
             URLConstants.SEARCH_URL_KEY: f"{self.base_url}/search",
-            URLConstants.BROWSE_URL_KEY: f"{self.base_url}/directory",
-            URLConstants.LOGIN_URL_KEY: f"{self.base_url}/login",
             # Add more URLs as needed for your tests
         }
     

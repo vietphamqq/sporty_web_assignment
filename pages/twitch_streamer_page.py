@@ -30,7 +30,7 @@ class TwitchStreamerPage(BasePage):
                 and self.is_element_present(self.ABOUT_MENU, timeout=TimeoutConstants.QUICK_WAIT)
                 and self.is_element_present(self.VIDEOS, timeout=TimeoutConstants.QUICK_WAIT)
             )
-        except:
+        except Exception:
             return False
 
     def wait_for_streamer_page_load(self) -> bool:

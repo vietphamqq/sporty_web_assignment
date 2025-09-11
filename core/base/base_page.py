@@ -466,8 +466,6 @@ class BasePage:
             str: Path to the screenshot file
         """
         if not filename:
-            import time
-
             timestamp = time.strftime("%Y%m%d_%H%M%S")
 
             # Try to get current device name for better filename

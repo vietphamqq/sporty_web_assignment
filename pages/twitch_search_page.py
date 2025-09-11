@@ -99,7 +99,6 @@ class TwitchSearchPage(BasePage):
 
     def scroll_down(self, times: int = 1) -> None:
         """Scroll down the specified number of times"""
-        # time.sleep(2)  # Wait for any dynamic content to load
         for i in range(times):
             self.scroll_down_in_viewport()
-            self.wait_for_page_load()
+            self.wait_for_search_streamer_results()

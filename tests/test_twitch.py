@@ -11,23 +11,18 @@ from pages.twitch_home_page import TwitchHomePage
 class TestTwitch(BaseTest):
     """Twitch Web automation test using Page Object Model"""
 
-    def _setup_test_data(self):
+    def _prepare_test_data(self):
         """Setup test data for Twitch streamer test"""
+        # We can use self.test_data["search_term"] = "Starcraft II" instead of self.search_term = "Starcraft II"
+        # But we will use self.search_term = "Starcraft II" for now
         self.search_term = "Starcraft II"
+        self.test_data["search_term"] = self.search_term
 
-    def _setup_test_environment(self):
-        """Setup Web test environment - driver is provided by conftest.py fixture"""
-        # This will be called after driver is set in the test method
-        if hasattr(self, 'driver'):
-            self.home_page = TwitchHomePage(self.driver)
 
     def test_twitch_search_and_navigate_to_streamer(self, driver):
         """Test: Go to Twitch, search for Starcraft II, scroll, select streamer, and take screenshot"""
-        # Set driver as instance variable for use in setup methods
-        self.driver = driver
-        
-        # Setup test environment with driver
-        self._setup_test_environment()
+        # Initialize the home page
+        self.home_page = TwitchHomePage(driver)
         
         self.log_test_step("Starting Twitch test")
 
@@ -36,7 +31,7 @@ class TestTwitch(BaseTest):
         self.home_page.navigate_to_home()
 
         # Verify we're on Twitch
-        current_url = self.driver.current_url
+        current_url = driver.current_url
         assert (
             "m.twitch.tv" in current_url
         ), f"Expected to be on Twitch, but current URL is: {current_url}"

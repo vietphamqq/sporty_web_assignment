@@ -54,15 +54,9 @@ class TwitchHomePage(BasePage):
         """
         try:
             # Use flexible locators - try multiple selectors in sequence
-            self.click_element(
-                [
-                    self.SEARCH_BUTTON,
-                    (By.CSS_SELECTOR, "input[type='search']"),
-                ],
-                timeout=TimeoutConstants.QUICK_WAIT,
-            )
+            self.click_element(self.SEARCH_BUTTON, timeout=TimeoutConstants.QUICK_WAIT)
             return TwitchSearchPage(self.driver)
-        except ElementNotFoundException:
-            # Log the error but return False instead of raising exception
+        except ElementNotFoundException as e:
+            self.logger.error(f"Search button not found: {e}")
             # This maintains the current behavior of the test
             return False

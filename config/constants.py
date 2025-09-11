@@ -12,15 +12,10 @@ class TimeoutConstants:
     # Default timeouts (in seconds)
     EXPLICIT_WAIT = 20
     PAGE_LOAD_TIMEOUT = 30
-    SCRIPT_TIMEOUT = 30
     
     # Short timeouts for quick checks
     QUICK_WAIT = 5
     ELEMENT_CHECK_TIMEOUT = 3
-    
-    # Long timeouts for slow operations
-    LONG_WAIT = 60
-    STREAMER_PAGE_LOAD_TIMEOUT = 15
 
 
 class BrowserConstants:
@@ -69,34 +64,15 @@ class ReportConstants:
     SCREENSHOT_ON_FAILURE = True
 
 
-class EnvironmentConstants:
-    """Environment-related constants"""
-    
-    # Environment names
-    PRODUCTION = "production"
-    STAGING = "staging"
-    DEVELOPMENT = "development"
-    
-    # Environment aliases
-    PROD_ALIAS = "prod"
-    DEV_ALIAS = "dev"
-    
-    # Default environment
-    DEFAULT_ENVIRONMENT = PRODUCTION
-
-
 class URLConstants:
     """URL-related constants"""
     
     # Production URLs
     PRODUCTION_BASE_URL = "https://m.twitch.tv"
     
-    
     # URL keys for environment configuration
     HOME_URL_KEY = "home"
     SEARCH_URL_KEY = "search"
-    BROWSE_URL_KEY = "browse"
-    LOGIN_URL_KEY = "login"
 
 
 class FrameworkConstants:
@@ -113,7 +89,7 @@ class FrameworkConstants:
     
     # Dependencies
     REQUIRED_SELENIUM_VERSION = "4.8.0"
-    REQUIRED_PYTEST_VERSION = "7.0.0"
+    REQUIRED_PYTEST_VERSION = "7.4.0"
 
 
 class ChromeOptionsConstants:
@@ -145,7 +121,6 @@ class ChromeOptionsConstants:
     MOBILE_EMULATION_ARGS = [
         "--enable-mobile-emulation",
         "--touch-events=enabled",
-        "--disable-features=VizDisplayCompositor",
     ]
     
     # Chrome preferences
@@ -198,11 +173,7 @@ class LoggingConstants:
     """Logging-related constants"""
     
     # Log levels
-    DEBUG = "DEBUG"
     INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
     
     # Default log level
     DEFAULT_LOG_LEVEL = INFO

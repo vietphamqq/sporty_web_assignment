@@ -99,12 +99,6 @@ class Settings:
             report_dir=os.getenv("REPORT_DIR", "reports"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
         )
-
-    # Legacy class properties for backward compatibility
-    # These will be dynamically set to maintain compatibility
-    BROWSER: BrowserConfig = None
-    TEST: TestConfig = None 
-    REPORT: ReportConfig = None
     
     @classmethod
     def _initialize_legacy_properties(cls):
