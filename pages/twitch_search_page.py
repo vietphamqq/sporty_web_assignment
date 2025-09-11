@@ -56,7 +56,7 @@ class TwitchSearchPage(BasePage):
             # This maintains the current behavior of the test
             return False
 
-    def get_search_category_results(self) -> List[WebElement]:
+    def get_search_category_results(self, search_term: str) -> List[WebElement]:
         """Get all search result elements
 
         Returns:
@@ -64,8 +64,13 @@ class TwitchSearchPage(BasePage):
         """
         try:
             # Use flexible locators to find search results
-            elements = self.find_elements(self.SEARCH_RESULTS, 10)
-            return elements if elements else []
+            elements = self.find_elements(self.SEARCH_RESULTS)
+            for element in elements:
+                if element.get_attribute("alt").lower() == search_term.lower():
+                    return [element]
+            # The search result might be too fast, try one more time
+            elements = self.find_elements(self.SEARCH_RESULTS)
+            return [element for element in elements if element.get_attribute("alt").lower() == search_term.lower()]
         except ElementNotFoundException:
             return []
 
