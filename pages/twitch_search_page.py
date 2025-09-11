@@ -19,7 +19,7 @@ class TwitchSearchPage(BasePage):
 
     # Locators
     SEARCH_INPUT = (By.CSS_SELECTOR, "input[type=search]")
-    SEARCH_RESULTS = (By.CSS_SELECTOR, "div > ul > li img")
+    SEARCH_RESULTS = (By.CSS_SELECTOR, "ul > li > a img[alt]")
     STREAMER_LINK = (By.CSS_SELECTOR, "div[class^= ScTextWrapper] > div > a")
     STREAMER_PREVIEW = (By.CSS_SELECTOR, "article img[class='tw-image']")
     ALL_LINKS = (By.TAG_NAME, "a")
@@ -64,7 +64,7 @@ class TwitchSearchPage(BasePage):
         """
         try:
             # Use flexible locators to find search results
-            elements = self.find_elements(self.SEARCH_RESULTS)
+            elements = self.find_elements(self.SEARCH_RESULTS, 10)
             return elements if elements else []
         except ElementNotFoundException:
             return []
